@@ -54,9 +54,13 @@ int lookup_var(VarTable* vt, char* s, int scope);
 // No check is made by this function, so make sure that the index is valid first.
 char* get_name(VarTable* vt, int i);
 
+void set_isArray_by_idx(VarTable *vt, int idx, int isArray);
+
 // Returns the declaration line of the variable stored at the given index.
 // No check is made by this function, so make sure that the index is valid first.
 int get_line(VarTable* vt, int i);
+
+int get_isArray(VarTable* vt, int i);
 
 // Returns the variable type stored at the given index.
 // No check is made by this function, so make sure that the index is valid first.

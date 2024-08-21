@@ -2,7 +2,6 @@
 %defines "parser.h"
 %define parse.error verbose
 %define parse.lac full
-%define api.value.type {AST*}
 
 %{
 #include <stdio.h>
@@ -10,26 +9,21 @@
 #include <string.h>
 #include "types.h"
 #include "tables.h"
-#include "ast.h"
 #include "parser.h"
-
-#define YYSTYPE AST*
 
 int yylex(void);
 int yylex_destroy(void);
 void yyerror(char const *s);
 
-void check_return_type(Type return_type, Type expr_type, int has_return);
-void check_format_type(Type var_type, Type expected_type, const char *format);
-void check_assignment_type(Type id_type, Type expr_type);
-void check_conditional_type(Type expr_type, char *op);
-Type get_type_from_var(char *name);
-Type get_type_from_func(char *name);
 void check_var();
 void new_var();
 int new_func();
 void check_func_params();
 void check_func();
+void check_isArray(int idx, int line, char* name);
+void check_isNotArray(int idx, int line);
+void check_array_position_int(int line, Type postionType);
+void check_array_type(Type array_Type, Type expressionType, int line);
 
 extern char *yytext;
 extern int yylineno;
@@ -46,7 +40,6 @@ int argument_count = 0; //conta o número de argumentos na chamada da função
 int has_return = 0; //flag que é marcada caso a funcao não tenha void como retorno
 int current_func_idx; //pega o index da funcao, para achar ela na function table e colocar os valores corretor de param_types, type e param_count
 int func_idx; //pega o index da funcao
-AST* root = NULL;
 
 Type arg_types[10]; //guarda os tipos de todos os argumentos chamados na chamada de uma função
 
@@ -54,7 +47,6 @@ char copied_id[128]; //copia o ultimo id visto
 char copied_func_id[128]; //copia o ultimo id de funcao visto
 
 Type last_decl_type; //tipo mais recente declarado
-
 %}
 
 %token FLOAT_TYPE_CAST
@@ -125,10 +117,7 @@ Type last_decl_type; //tipo mais recente declarado
 %%
 
 program:
-  package_declaration import_declaration list_func_generic func_main {
-    $$ = new_subtree(PROGRAM_NODE, VOID_TYPE_, 1, $4); // Raiz da AST é o nó PROGRAM_NODE
-    root = $$; // Atribui a raiz da AST à variável global root
-  }
+  package_declaration import_declaration list_func_generic func_main 
 ;
 
 package_declaration:
@@ -141,15 +130,11 @@ import_declaration:
 ;
 
 func_main :
-  FUNC MAIN { current_scope++; } LEFT_PARENTESES RIGHT_PARENTESES block {
-    $$ = new_subtree(MAIN_NODE, VOID_TYPE_, 1, $6); // Cria o nó MAIN_NODE
-  }
+  FUNC MAIN { current_scope++; } LEFT_PARENTESES RIGHT_PARENTESES block
 ;
 
 block :
-  LEFT_BRACE statement_list RIGHT_BRACE {
-    $$ = new_subtree(BLOCK_NODE, VOID_TYPE_, 1, $2); // Cria o nó BLOCK_NODE
-  }
+  LEFT_BRACE statement_list RIGHT_BRACE
 ;
 
 list_func_generic:
@@ -172,7 +157,7 @@ argument_list:
 
 return_statement:
   RETURN assign_expression { 
-    check_return_type(current_return_type, $2, 1);
+    check_return_type(yylineno, current_return_type, $2, 1);
     has_return = 1; // Indicar que um return foi encontrado
   }
 ;
@@ -195,7 +180,7 @@ statement:
 | return_statement SEMI
 | ID { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 } LEFT_PARENTESES argument_list_call { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
-} RIGHT_PARENTESES SEMI { $$ = get_type_from_func(copied_func_id);
+} RIGHT_PARENTESES SEMI { $$ = get_type_from_func(yylineno, copied_func_id);
 } //FUNCTION CALL
 ;
 
@@ -205,67 +190,45 @@ string_list:
 ;
 
 val_declaration :
-  VAR ID type_spec { new_var(); 
-  $$ = new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), $3); }// Cria nó VAR_DECL_NODE
+  VAR ID type_spec { new_var(); }
 ;
 
 assign_val :
-  ID { check_var(); id_type = get_type_from_var(copied_id); } ASSIGN assign_expression {
-    check_assignment_type(id_type, $4);
-    AST *var_use = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), id_type);
-    $$ = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, var_use, $4); // Cria nó ASSIGN_NODE
-  }
+  ID  { 
+        check_var(); 
+        id_type = get_type_from_var(yylineno, copied_id, current_scope);
+        int idx = lookup_var(vt, copied_id, current_scope);
+        check_isArray(idx, yylineno, copied_id);
+      } ASSIGN assign_expression {
+        check_assignment_type(yylineno, id_type, $4);
+      }
 ;
 
 array_printable:
-  ID { check_var(); $$ = get_type_from_var(copied_id); } LEFT_BRACKET id_int_compression RIGHT_BRACKET{
-    if($4 != INT_TYPE_){
-      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", yylineno);
-      exit(EXIT_FAILURE);
-    }
+  ID { check_var(); $$ = get_type_from_var(yylineno, copied_id, current_scope); } LEFT_BRACKET id_int_compression RIGHT_BRACKET{
+    check_array_position_int(yylineno, $4);
   }
 ;
 
 array_declaration :
-  VAR ID LEFT_BRACKET INT_VAL { $$ = INT_TYPE_; } RIGHT_BRACKET type_spec { new_var(); 
-    if($4 != INT_TYPE_){
-      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", yylineno);
-      exit(EXIT_FAILURE);
-    }
+  VAR ID LEFT_BRACKET INT_VAL { $$ = INT_TYPE_; } RIGHT_BRACKET type_spec { new_var(); int idx = lookup_var(vt, copied_id, current_scope); set_isArray_by_idx(vt, idx, 1);
+    check_array_position_int(yylineno, $4);
   }
 ;
 
 array_assign :
-  ID { check_var(); array_type = get_type_from_var(copied_id); } LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression {
-
-    if($4 != INT_TYPE_){
-      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", yylineno);
-      exit(EXIT_FAILURE);
-    }
-
-    // Verificação de narrowing e widening
-    if (array_type == INT_TYPE_ && $7 != INT_TYPE_) {
-        if ($7 == FLOAT_TYPE_) {
-            printf("SEMANTIC ERROR (%d): cannot assign 'float32' to 'int' array without explicit cast.\n", yylineno);
-            exit(EXIT_FAILURE);
-        } else {
-            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'int' array.\n", yylineno);
-            exit(EXIT_FAILURE);
-        }
-    } else if (array_type == FLOAT_TYPE_ && $7 != FLOAT_TYPE_) {
-        if ($7 == INT_TYPE_) {
-            printf("SEMANTIC ERROR (%d): cannot assign 'int' to 'float32' array without explicit cast.\n", yylineno);
-            exit(EXIT_FAILURE);
-        } else {
-            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'float32' array.\n", yylineno);
-            exit(EXIT_FAILURE);
-        }
-    }
+  ID { check_var(); 
+        array_type = get_type_from_var(yylineno, copied_id, current_scope);
+        int idx = lookup_var(vt, copied_id, current_scope);
+        check_isNotArray(idx, yylineno);
+      } LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression {
+        check_array_position_int(yylineno, $4);
+        check_array_type(array_type, $7, yylineno);
   }
 ;
 
 id_int_compression:
-  ID { check_var(); $$ = get_type_from_var(copied_id); }
+  ID { check_var(); $$ = get_type_from_var(yylineno, copied_id, current_scope); }
 | INT_VAL { $$ = INT_TYPE_; }
 ;
 
@@ -293,13 +256,13 @@ assign_expression :
 }
 | ID { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 } LEFT_PARENTESES argument_list_call { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
-} RIGHT_PARENTESES { $$ = get_type_from_func(copied_func_id);
+} RIGHT_PARENTESES { $$ = get_type_from_func(yylineno, copied_func_id);
 } //FUNCTION CALL
 ;
 
 argument_list_call:
   %empty
-| ID { check_var(); arg_types[argument_count] = get_type_from_var(copied_id); argument_count++; } comma_expression argument_list_call
+| ID { check_var(); arg_types[argument_count] = get_type_from_var(yylineno, copied_id, current_scope); argument_count++; } comma_expression argument_list_call
 | argument_val { arg_types[argument_count] = $1; argument_count++; } comma_expression argument_list_call
 ;
 
@@ -318,21 +281,7 @@ comma_expression:
 operator_expression:
   id_number_compression operators id_number_compression {
     if ($1 == $3) {
-      AST *left = $1;
-      AST *right = $3;
-      NodeKind kind;
-
-      switch ($2) {
-        case PLUS: kind = PLUS_NODE; break;
-        case MINUS: kind = MINUS_NODE; break;
-        case TIMES: kind = TIMES_NODE; break;
-        case OVER: kind = OVER_NODE; break;
-        case REST: kind = REST_NODE; break;
-        default:
-            printf("SEMANTIC ERROR (%d): Unknown operator.\n", yylineno);
-            exit(EXIT_FAILURE);
-      }
-      $$ = new_subtree(kind, get_node_type(left), 2, left, right);
+      $$ = $1; // Ambos são do mesmo tipo
     } else {
       printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text($1), get_text($3));
       exit(EXIT_FAILURE);
@@ -423,7 +372,11 @@ operator_expression:
 ;
 
 id_number_compression:
-  ID { check_var(); $$ = get_type_from_var(copied_id); }
+  ID  { check_var(); 
+        $$ = get_type_from_var(yylineno, copied_id, current_scope);
+        int idx = lookup_var(vt, copied_id, current_scope);
+        check_isArray(idx, yylineno, copied_id);
+      }
 | number_val_spec { $$ = $1; }
 | BOOL_VAL { $$ = BOOL_TYPE_; }
 ;
@@ -434,8 +387,8 @@ if_statement:
 ;
 
 if_expression:
-  ID { check_var(); Type expr_type = get_type_from_var(copied_id); check_conditional_type(expr_type, "if"); }
-| BOOL_VAL { check_conditional_type(BOOL_TYPE_, "if"); }
+  ID { check_var(); Type expr_type = get_type_from_var(yylineno, copied_id, current_scope); check_conditional_type(yylineno, expr_type, "if"); }
+| BOOL_VAL { check_conditional_type(yylineno, BOOL_TYPE_, "if"); }
 | id_number_compression comparadors id_number_compression
 | operator_expression comparadors id_number_compression
 ;
@@ -461,14 +414,14 @@ print_args:
   STRING_VAL { /* Ignora strings sem formatação */ }
 | id_number_compression
 | array_printable
-| FORMAT_STRING COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-| FORMAT_INT COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-| FORMAT_FLOAT COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-| FORMAT_BOOL COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
-| print_args COMMA FORMAT_STRING COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-| print_args COMMA FORMAT_INT COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-| print_args COMMA FORMAT_FLOAT COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-| print_args COMMA FORMAT_BOOL COMMA ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
+| FORMAT_STRING COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+| FORMAT_INT COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+| FORMAT_FLOAT COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+| FORMAT_BOOL COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
+| print_args COMMA FORMAT_STRING COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+| print_args COMMA FORMAT_INT COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+| print_args COMMA FORMAT_FLOAT COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+| print_args COMMA FORMAT_BOOL COMMA ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
 ;
 
 scanf_operation:
@@ -476,14 +429,14 @@ scanf_operation:
 ;
 
 scan_args:
-  FORMAT_STRING COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-| FORMAT_INT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-| FORMAT_FLOAT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-| FORMAT_BOOL COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
-| scan_args COMMA FORMAT_STRING COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-| scan_args COMMA FORMAT_INT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-| scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-| scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
+  FORMAT_STRING COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+| FORMAT_INT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+| FORMAT_FLOAT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+| FORMAT_BOOL COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
+| scan_args COMMA FORMAT_STRING COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+| scan_args COMMA FORMAT_INT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+| scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+| scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
 ;
 
 type_spec:
@@ -519,72 +472,67 @@ operators:
 
 %%
 
-void check_return_type(Type return_type, Type expr_type, int has_return) {
-    if (return_type == VOID_TYPE_) {
-        if (has_return) {
-            printf("SEMANTIC ERROR (%d): 'void' function should not return a value.\n", yylineno);
+void check_array_type(Type array_type, Type expression_type, int line) {
+    if (array_type == INT_TYPE_ && expression_type != INT_TYPE_) {
+        if (expression_type == FLOAT_TYPE_) {
+            printf("SEMANTIC ERROR (%d): cannot assign 'float32' to 'int' array without explicit cast.\n", line);
+            exit(EXIT_FAILURE);
+        } else {
+            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'int' array.\n", line);
             exit(EXIT_FAILURE);
         }
-    } else if (return_type != expr_type) {
-        printf("SEMANTIC ERROR (%d): Function declared to return '%s' but returns '%s'.\n",
-               yylineno, get_text(return_type), get_text(expr_type));
-        exit(EXIT_FAILURE);
+    } else if (array_type == FLOAT_TYPE_ && expression_type != FLOAT_TYPE_) {
+        if (expression_type == INT_TYPE_) {
+            printf("SEMANTIC ERROR (%d): cannot assign 'int' to 'float32' array without explicit cast.\n", line);
+            exit(EXIT_FAILURE);
+        } else {
+            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'float32' array.\n", line);
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
 
-void check_format_type(Type var_type, Type expected_type, const char *format) {
-    if (var_type != expected_type) {
-        printf("SEMANTIC ERROR (%d): Mismatched type for format specifier '%s'. Expected '%s' but got '%s'.\n",
-               yylineno, format, get_text(expected_type), get_text(var_type));
-        exit(EXIT_FAILURE);
+void check_isNotArray(int idx, int line) {
+  if (!get_isArray(vt, idx)) {
+    printf("SEMANTIC ERROR (%d): Expected array variable.\n", line);
+    exit(EXIT_FAILURE);
+  } 
+}
+
+void check_array_position_int(int line, Type postionType){
+  if(postionType != INT_TYPE_){
+      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", line);
+      exit(EXIT_FAILURE);
     }
 }
 
-void check_assignment_type(Type id_type, Type expr_type) {
-    if (id_type == INT_TYPE_ && expr_type != INT_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'int'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-    if (id_type == FLOAT_TYPE_ && expr_type != FLOAT_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'float32'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-    if (id_type == STRING_TYPE_ && expr_type != STRING_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'string'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-    if (id_type == BOOL_TYPE_ && expr_type != BOOL_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'bool'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
+void check_isArray(int idx, int line, char* name) {
+  if (get_isArray(vt, idx)) {
+    printf("SEMANTIC ERROR (%d): Array variable '%s' used without index.\n", line, name);
+    exit(EXIT_FAILURE);
+  }
 }
+        
 
-void check_conditional_type(Type expr_type, char *op) {
-    if (expr_type != BOOL_TYPE_) {
-        printf("SEMANTIC ERROR (%d): conditional expression in '%s' is '%s' instead of 'bool'.\n",
-               yylineno, op, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-}
-
-Type get_type_from_func(char *name) {
+Type get_type_from_func(int line, char *name) {
     int idx = lookup_func(ft, name);
     if (idx == -1) {
-        printf("SEMANTIC ERROR (%d): function '%s' was not declared.\n", yylineno, name);
+        printf("SEMANTIC ERROR (%d): function '%s' was not declared.\n", line, name);
         exit(EXIT_FAILURE);
     }
     return get_func_type(ft, idx);
 }
 
-Type get_type_from_var(char *name) {
-    int idx = lookup_var(vt, name, current_scope);
+Type get_type_from_var(int line, char *name, int current_scope2) {
+    int idx = lookup_var(vt, name, current_scope2);
     if (idx == -1) {
-        printf("SEMANTIC ERROR (%d): variable '%s' was not declared.\n", yylineno, name);
+        printf("SEMANTIC ERROR (%d): variable '%s' was not declared.\n", line, name);
         exit(EXIT_FAILURE);
     }
     return get_type(vt, idx);
 }
+
 
 void check_var() {
     /*printf("DEBUG: Checking variable %s at line %d, scope %d\n", copied_id, yylineno, current_scope);*/
@@ -662,15 +610,6 @@ int main() {
 
     yyparse();
     printf("PARSE SUCCESSFUL!\n");
-
-    // Verifica se a raiz da AST foi construída
-    if (root != NULL) {
-        // Imprime a AST em formato dot
-        print_dot(root);
-
-        // Libera a memória utilizada pela AST
-        free_tree(root);
-    }
 
     printf("\n\n");
     print_str_table(st); printf("\n\n");

@@ -15,7 +15,6 @@
 #include "types.h"
 #include "tables.h"
 #include "parser.h"
-#include "ast.h"
 
 #define process_token(type) return type
 

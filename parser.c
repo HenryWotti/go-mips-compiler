@@ -67,34 +67,28 @@
 
 
 /* First part of user prologue.  */
-#line 7 "parser.y"
+#line 6 "parser.y"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
 #include "tables.h"
-#include "ast.h"
 #include "parser.h"
-
-
-#define YYSTYPE AST*
 
 int yylex(void);
 int yylex_destroy(void);
 void yyerror(char const *s);
 
-void check_return_type(Type return_type, Type expr_type, int has_return);
-void check_format_type(Type var_type, Type expected_type, const char *format);
-void check_assignment_type(Type id_type, Type expr_type);
-void check_conditional_type(Type expr_type, char *op);
-Type get_type_from_var(char *name);
-Type get_type_from_func(char *name);
 void check_var();
 void new_var();
 int new_func();
 void check_func_params();
 void check_func();
+void check_isArray(int idx, int line, char* name);
+void check_isNotArray(int idx, int line);
+void check_array_position_int(int line, Type postionType);
+void check_array_type(Type array_Type, Type expressionType, int line);
 
 extern char *yytext;
 extern int yylineno;
@@ -111,7 +105,6 @@ int argument_count = 0; //conta o número de argumentos na chamada da função
 int has_return = 0; //flag que é marcada caso a funcao não tenha void como retorno
 int current_func_idx; //pega o index da funcao, para achar ela na function table e colocar os valores corretor de param_types, type e param_count
 int func_idx; //pega o index da funcao
-AST* root = NULL;
 
 Type arg_types[10]; //guarda os tipos de todos os argumentos chamados na chamada de uma função
 
@@ -120,7 +113,7 @@ char copied_func_id[128]; //copia o ultimo id de funcao visto
 
 Type last_decl_type; //tipo mais recente declarado
 
-#line 124 "parser.c"
+#line 117 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -631,20 +624,20 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   128,   128,   135,   139,   140,   144,   144,   150,   156,
-     157,   161,   162,   161,   169,   170,   170,   174,   181,   182,
-     186,   187,   188,   189,   190,   191,   192,   193,   194,   195,
-     196,   197,   196,   203,   204,   208,   213,   213,   221,   221,
-     230,   230,   239,   239,   268,   269,   273,   274,   275,   276,
-     285,   294,   295,   294,   301,   302,   302,   303,   303,   307,
-     308,   309,   310,   314,   315,   319,   341,   354,   367,   380,
-     393,   401,   409,   416,   426,   427,   428,   432,   433,   437,
-     438,   439,   440,   444,   444,   444,   448,   448,   452,   452,
-     453,   453,   457,   461,   462,   463,   464,   465,   466,   467,
-     468,   469,   470,   471,   475,   479,   480,   481,   482,   483,
-     484,   485,   486,   490,   491,   492,   493,   494,   498,   499,
-     503,   504,   505,   506,   507,   508,   509,   513,   514,   515,
-     516,   517
+       0,   120,   120,   124,   128,   129,   133,   133,   137,   141,
+     142,   146,   147,   146,   154,   155,   155,   159,   166,   167,
+     171,   172,   173,   174,   175,   176,   177,   178,   179,   180,
+     181,   182,   181,   188,   189,   193,   197,   197,   208,   208,
+     214,   214,   220,   220,   231,   232,   236,   237,   238,   239,
+     248,   257,   258,   257,   264,   265,   265,   266,   266,   270,
+     271,   272,   273,   277,   278,   282,   290,   303,   316,   329,
+     342,   350,   358,   365,   375,   380,   381,   385,   386,   390,
+     391,   392,   393,   397,   397,   397,   401,   401,   405,   405,
+     406,   406,   410,   414,   415,   416,   417,   418,   419,   420,
+     421,   422,   423,   424,   428,   432,   433,   434,   435,   436,
+     437,   438,   439,   443,   444,   445,   446,   447,   451,   452,
+     456,   457,   458,   459,   460,   461,   462,   466,   467,   468,
+     469,   470
 };
 #endif
 
@@ -1921,227 +1914,180 @@ yyreduce:
     int yychar_backup = yychar;
     switch (yyn)
       {
-  case 2: /* program: package_declaration import_declaration list_func_generic func_main  */
-#line 128 "parser.y"
-                                                                     {
-    yyval = new_subtree(PROGRAM_NODE, VOID_TYPE_, 1, yyvsp[0]); // Raiz da AST é o nó PROGRAM_NODE
-    root = yyval; // Atribui a raiz da AST à variável global root
-  }
-#line 1931 "parser.c"
-    break;
-
   case 6: /* $@1: %empty  */
-#line 144 "parser.y"
+#line 133 "parser.y"
             { current_scope++; }
-#line 1937 "parser.c"
-    break;
-
-  case 7: /* func_main: FUNC MAIN $@1 LEFT_PARENTESES RIGHT_PARENTESES block  */
-#line 144 "parser.y"
-                                                                        {
-    yyval = new_subtree(MAIN_NODE, VOID_TYPE_, 1, yyvsp[0]); // Cria o nó MAIN_NODE
-  }
-#line 1945 "parser.c"
-    break;
-
-  case 8: /* block: LEFT_BRACE statement_list RIGHT_BRACE  */
-#line 150 "parser.y"
-                                        {
-    yyval = new_subtree(BLOCK_NODE, VOID_TYPE_, 1, yyvsp[-1]); // Cria o nó BLOCK_NODE
-  }
-#line 1953 "parser.c"
+#line 1921 "parser.c"
     break;
 
   case 11: /* $@2: %empty  */
-#line 161 "parser.y"
+#line 146 "parser.y"
           { strcpy(copied_func_id, copied_id); current_scope++; current_func_idx = new_func();
   }
-#line 1960 "parser.c"
+#line 1928 "parser.c"
     break;
 
   case 12: /* $@3: %empty  */
-#line 162 "parser.y"
+#line 147 "parser.y"
                                                              { update_func_return_type(ft, current_func_idx, last_decl_type); current_return_type=last_decl_type;
   }
-#line 1967 "parser.c"
+#line 1935 "parser.c"
     break;
 
   case 13: /* func_generic: FUNC ID $@2 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@3 block  */
-#line 163 "parser.y"
+#line 148 "parser.y"
           { 
     has_return = 0;
   }
-#line 1975 "parser.c"
+#line 1943 "parser.c"
     break;
 
   case 15: /* $@4: %empty  */
-#line 170 "parser.y"
+#line 155 "parser.y"
                { new_var(); add_param_type(ft, current_func_idx, last_decl_type, yylineno);}
-#line 1981 "parser.c"
+#line 1949 "parser.c"
     break;
 
   case 17: /* return_statement: RETURN assign_expression  */
-#line 174 "parser.y"
+#line 159 "parser.y"
                            { 
-    check_return_type(current_return_type, yyvsp[0], 1);
+    check_return_type(yylineno, current_return_type, yyvsp[0], 1);
     has_return = 1; // Indicar que um return foi encontrado
   }
-#line 1990 "parser.c"
+#line 1958 "parser.c"
     break;
 
   case 30: /* $@5: %empty  */
-#line 196 "parser.y"
+#line 181 "parser.y"
      { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 }
-#line 1997 "parser.c"
+#line 1965 "parser.c"
     break;
 
   case 31: /* $@6: %empty  */
-#line 197 "parser.y"
+#line 182 "parser.y"
                                      { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
 }
-#line 2004 "parser.c"
+#line 1972 "parser.c"
     break;
 
   case 32: /* statement: ID $@5 LEFT_PARENTESES argument_list_call $@6 RIGHT_PARENTESES SEMI  */
-#line 198 "parser.y"
-                        { yyval = get_type_from_func(copied_func_id);
+#line 183 "parser.y"
+                        { yyval = get_type_from_func(yylineno, copied_func_id);
 }
-#line 2011 "parser.c"
+#line 1979 "parser.c"
     break;
 
   case 33: /* string_list: STRING_VAL  */
-#line 203 "parser.y"
+#line 188 "parser.y"
              { yyval = STRING_TYPE_; }
-#line 2017 "parser.c"
+#line 1985 "parser.c"
     break;
 
   case 35: /* val_declaration: VAR ID type_spec  */
-#line 208 "parser.y"
-                   { new_var(); 
-  yyval = new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), yyvsp[0]); }
-#line 2024 "parser.c"
+#line 193 "parser.y"
+                   { new_var(); }
+#line 1991 "parser.c"
     break;
 
   case 36: /* $@7: %empty  */
-#line 213 "parser.y"
-     { check_var(); id_type = get_type_from_var(copied_id); }
-#line 2030 "parser.c"
+#line 197 "parser.y"
+      { 
+        check_var(); 
+        id_type = get_type_from_var(yylineno, copied_id, current_scope);
+        int idx = lookup_var(vt, copied_id, current_scope);
+        check_isArray(idx, yylineno, copied_id);
+      }
+#line 2002 "parser.c"
     break;
 
   case 37: /* assign_val: ID $@7 ASSIGN assign_expression  */
-#line 213 "parser.y"
-                                                                                       {
-    check_assignment_type(id_type, yyvsp[0]);
-    AST *var_use = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), id_type);
-    yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, var_use, yyvsp[0]); // Cria nó ASSIGN_NODE
-  }
-#line 2040 "parser.c"
+#line 202 "parser.y"
+                                 {
+        check_assignment_type(yylineno, id_type, yyvsp[0]);
+      }
+#line 2010 "parser.c"
     break;
 
   case 38: /* @8: %empty  */
-#line 221 "parser.y"
-     { check_var(); yyval = get_type_from_var(copied_id); }
-#line 2046 "parser.c"
+#line 208 "parser.y"
+     { check_var(); yyval = get_type_from_var(yylineno, copied_id, current_scope); }
+#line 2016 "parser.c"
     break;
 
   case 39: /* array_printable: ID @8 LEFT_BRACKET id_int_compression RIGHT_BRACKET  */
-#line 221 "parser.y"
-                                                                                                      {
-    if(yyvsp[-1] != INT_TYPE_){
-      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", yylineno);
-      exit(EXIT_FAILURE);
-    }
+#line 208 "parser.y"
+                                                                                                                               {
+    check_array_position_int(yylineno, yyvsp[-1]);
+  }
+#line 2024 "parser.c"
+    break;
+
+  case 40: /* @9: %empty  */
+#line 214 "parser.y"
+                              { yyval = INT_TYPE_; }
+#line 2030 "parser.c"
+    break;
+
+  case 41: /* array_declaration: VAR ID LEFT_BRACKET INT_VAL @9 RIGHT_BRACKET type_spec  */
+#line 214 "parser.y"
+                                                                          { new_var(); int idx = lookup_var(vt, copied_id, current_scope); set_isArray_by_idx(vt, idx, 1);
+    check_array_position_int(yylineno, yyvsp[-3]);
+  }
+#line 2038 "parser.c"
+    break;
+
+  case 42: /* $@10: %empty  */
+#line 220 "parser.y"
+     { check_var(); 
+        array_type = get_type_from_var(yylineno, copied_id, current_scope);
+        int idx = lookup_var(vt, copied_id, current_scope);
+        check_isNotArray(idx, yylineno);
+      }
+#line 2048 "parser.c"
+    break;
+
+  case 43: /* array_assign: ID $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression  */
+#line 224 "parser.y"
+                                                                               {
+        check_array_position_int(yylineno, yyvsp[-3]);
+        check_array_type(array_type, yyvsp[0], yylineno);
   }
 #line 2057 "parser.c"
     break;
 
-  case 40: /* @9: %empty  */
-#line 230 "parser.y"
-                              { yyval = INT_TYPE_; }
+  case 44: /* id_int_compression: ID  */
+#line 231 "parser.y"
+     { check_var(); yyval = get_type_from_var(yylineno, copied_id, current_scope); }
 #line 2063 "parser.c"
     break;
 
-  case 41: /* array_declaration: VAR ID LEFT_BRACKET INT_VAL @9 RIGHT_BRACKET type_spec  */
-#line 230 "parser.y"
-                                                                          { new_var(); 
-    if(yyvsp[-3] != INT_TYPE_){
-      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", yylineno);
-      exit(EXIT_FAILURE);
-    }
-  }
-#line 2074 "parser.c"
-    break;
-
-  case 42: /* $@10: %empty  */
-#line 239 "parser.y"
-     { check_var(); array_type = get_type_from_var(copied_id); }
-#line 2080 "parser.c"
-    break;
-
-  case 43: /* array_assign: ID $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression  */
-#line 239 "parser.y"
-                                                                                                                                        {
-
-    if(yyvsp[-3] != INT_TYPE_){
-      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", yylineno);
-      exit(EXIT_FAILURE);
-    }
-
-    // Verificação de narrowing e widening
-    if (array_type == INT_TYPE_ && yyvsp[0] != INT_TYPE_) {
-        if (yyvsp[0] == FLOAT_TYPE_) {
-            printf("SEMANTIC ERROR (%d): cannot assign 'float32' to 'int' array without explicit cast.\n", yylineno);
-            exit(EXIT_FAILURE);
-        } else {
-            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'int' array.\n", yylineno);
-            exit(EXIT_FAILURE);
-        }
-    } else if (array_type == FLOAT_TYPE_ && yyvsp[0] != FLOAT_TYPE_) {
-        if (yyvsp[0] == INT_TYPE_) {
-            printf("SEMANTIC ERROR (%d): cannot assign 'int' to 'float32' array without explicit cast.\n", yylineno);
-            exit(EXIT_FAILURE);
-        } else {
-            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'float32' array.\n", yylineno);
-            exit(EXIT_FAILURE);
-        }
-    }
-  }
-#line 2111 "parser.c"
-    break;
-
-  case 44: /* id_int_compression: ID  */
-#line 268 "parser.y"
-     { check_var(); yyval = get_type_from_var(copied_id); }
-#line 2117 "parser.c"
-    break;
-
   case 45: /* id_int_compression: INT_VAL  */
-#line 269 "parser.y"
+#line 232 "parser.y"
           { yyval = INT_TYPE_; }
-#line 2123 "parser.c"
+#line 2069 "parser.c"
     break;
 
   case 46: /* assign_expression: STRING_VAL  */
-#line 273 "parser.y"
+#line 236 "parser.y"
              { yyval = STRING_TYPE_; }
-#line 2129 "parser.c"
+#line 2075 "parser.c"
     break;
 
   case 47: /* assign_expression: id_number_compression  */
-#line 274 "parser.y"
+#line 237 "parser.y"
                         { yyval = yyvsp[0]; }
-#line 2135 "parser.c"
+#line 2081 "parser.c"
     break;
 
   case 48: /* assign_expression: operator_expression  */
-#line 275 "parser.y"
+#line 238 "parser.y"
                       { yyval = yyvsp[0]; }
-#line 2141 "parser.c"
+#line 2087 "parser.c"
     break;
 
   case 49: /* assign_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 276 "parser.y"
+#line 239 "parser.y"
                                                        {
     if (yyvsp[-1] == FLOAT_TYPE_) {
         yyval = INT_TYPE_;
@@ -2151,11 +2097,11 @@ yyreduce:
         exit(EXIT_FAILURE);
     }
 }
-#line 2155 "parser.c"
+#line 2101 "parser.c"
     break;
 
   case 50: /* assign_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 285 "parser.y"
+#line 248 "parser.y"
                                                          {
     if (yyvsp[-1] == INT_TYPE_) {
         yyval = FLOAT_TYPE_;
@@ -2165,95 +2111,81 @@ yyreduce:
         exit(EXIT_FAILURE);
     }
 }
-#line 2169 "parser.c"
+#line 2115 "parser.c"
     break;
 
   case 51: /* $@11: %empty  */
-#line 294 "parser.y"
+#line 257 "parser.y"
      { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 }
-#line 2176 "parser.c"
+#line 2122 "parser.c"
     break;
 
   case 52: /* $@12: %empty  */
-#line 295 "parser.y"
+#line 258 "parser.y"
                                      { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
 }
-#line 2183 "parser.c"
+#line 2129 "parser.c"
     break;
 
   case 53: /* assign_expression: ID $@11 LEFT_PARENTESES argument_list_call $@12 RIGHT_PARENTESES  */
-#line 296 "parser.y"
-                   { yyval = get_type_from_func(copied_func_id);
+#line 259 "parser.y"
+                   { yyval = get_type_from_func(yylineno, copied_func_id);
 }
-#line 2190 "parser.c"
+#line 2136 "parser.c"
     break;
 
   case 55: /* $@13: %empty  */
-#line 302 "parser.y"
-     { check_var(); arg_types[argument_count] = get_type_from_var(copied_id); argument_count++; }
-#line 2196 "parser.c"
+#line 265 "parser.y"
+     { check_var(); arg_types[argument_count] = get_type_from_var(yylineno, copied_id, current_scope); argument_count++; }
+#line 2142 "parser.c"
     break;
 
   case 57: /* $@14: %empty  */
-#line 303 "parser.y"
+#line 266 "parser.y"
                { arg_types[argument_count] = yyvsp[0]; argument_count++; }
-#line 2202 "parser.c"
+#line 2148 "parser.c"
     break;
 
   case 59: /* argument_val: STRING_VAL  */
-#line 307 "parser.y"
+#line 270 "parser.y"
              { yyval = STRING_TYPE_; }
-#line 2208 "parser.c"
+#line 2154 "parser.c"
     break;
 
   case 60: /* argument_val: BOOL_VAL  */
-#line 308 "parser.y"
+#line 271 "parser.y"
            { yyval = BOOL_TYPE_; }
-#line 2214 "parser.c"
+#line 2160 "parser.c"
     break;
 
   case 61: /* argument_val: INT_VAL  */
-#line 309 "parser.y"
+#line 272 "parser.y"
           { yyval = INT_TYPE_; }
-#line 2220 "parser.c"
+#line 2166 "parser.c"
     break;
 
   case 62: /* argument_val: FLOAT_VAL  */
-#line 310 "parser.y"
+#line 273 "parser.y"
             { yyval = FLOAT_TYPE_; }
-#line 2226 "parser.c"
+#line 2172 "parser.c"
     break;
 
   case 65: /* operator_expression: id_number_compression operators id_number_compression  */
-#line 319 "parser.y"
+#line 282 "parser.y"
                                                         {
     if (yyvsp[-2] == yyvsp[0]) {
-      AST *left = yyvsp[-2];
-      AST *right = yyvsp[0];
-      NodeKind kind;
-
-      switch (yyvsp[-1]) {
-        case PLUS: kind = PLUS_NODE; break;
-        case MINUS: kind = MINUS_NODE; break;
-        case TIMES: kind = TIMES_NODE; break;
-        case OVER: kind = OVER_NODE; break;
-        case REST: kind = REST_NODE; break;
-        default:
-            printf("SEMANTIC ERROR (%d): Unknown operator.\n", yylineno);
-            exit(EXIT_FAILURE);
-      }
-      yyval = new_subtree(kind, get_node_type(left), 2, left, right);
+      yyval = yyvsp[-2]; // Ambos são do mesmo tipo
     } else {
       printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(yyvsp[-2]), get_text(yyvsp[0]));
       exit(EXIT_FAILURE);
     }
 }
-#line 2253 "parser.c"
+#line 2185 "parser.c"
     break;
 
   case 66: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression  */
-#line 341 "parser.y"
+#line 290 "parser.y"
                                                                                        {
     if (yyvsp[-3] != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'int'.\n", yylineno, get_text(yyvsp[-3]));
@@ -2267,11 +2199,11 @@ yyreduce:
       yyval = INT_TYPE_;
     }
 }
-#line 2271 "parser.c"
+#line 2203 "parser.c"
     break;
 
   case 67: /* operator_expression: id_number_compression operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 354 "parser.y"
+#line 303 "parser.y"
                                                                                        {
     if (yyvsp[-1] != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'int'.\n", yylineno, get_text(yyvsp[-1]));
@@ -2285,11 +2217,11 @@ yyreduce:
       yyval = INT_TYPE_;
     }
 }
-#line 2289 "parser.c"
+#line 2221 "parser.c"
     break;
 
   case 68: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression  */
-#line 367 "parser.y"
+#line 316 "parser.y"
                                                                                          {
     if (yyvsp[-3] != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'float32'.\n", yylineno, get_text(yyvsp[-3]));
@@ -2303,11 +2235,11 @@ yyreduce:
       yyval = FLOAT_TYPE_;
     }
 }
-#line 2307 "parser.c"
+#line 2239 "parser.c"
     break;
 
   case 69: /* operator_expression: id_number_compression operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 380 "parser.y"
+#line 329 "parser.y"
                                                                                          {
     if (yyvsp[-1] != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'float32'.\n", yylineno, get_text(yyvsp[-1]));
@@ -2321,11 +2253,11 @@ yyreduce:
       yyval = FLOAT_TYPE_;
     }
 }
-#line 2325 "parser.c"
+#line 2257 "parser.c"
     break;
 
   case 70: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 393 "parser.y"
+#line 342 "parser.y"
                                                                                                                         {
     if (yyvsp[-5] != FLOAT_TYPE_ || yyvsp[-1] != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2334,11 +2266,11 @@ yyreduce:
     printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(yyvsp[-5]), get_text(yyvsp[-1]));
     exit(EXIT_FAILURE);
 }
-#line 2338 "parser.c"
+#line 2270 "parser.c"
     break;
 
   case 71: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 401 "parser.y"
+#line 350 "parser.y"
                                                                                                                         {
     if (yyvsp[-5] != INT_TYPE_ || yyvsp[-1] != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2347,11 +2279,11 @@ yyreduce:
     printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(yyvsp[-5]), get_text(yyvsp[-1]));
     exit(EXIT_FAILURE);
 }
-#line 2351 "parser.c"
+#line 2283 "parser.c"
     break;
 
   case 72: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 409 "parser.y"
+#line 358 "parser.y"
                                                                                                                       {
     if (yyvsp[-5] != FLOAT_TYPE_ || yyvsp[-1] != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2359,11 +2291,11 @@ yyreduce:
     }
     yyval = INT_TYPE_;
 }
-#line 2363 "parser.c"
+#line 2295 "parser.c"
     break;
 
   case 73: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 416 "parser.y"
+#line 365 "parser.y"
                                                                                                                           {
     if (yyvsp[-5] != INT_TYPE_ || yyvsp[-1] != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2371,215 +2303,219 @@ yyreduce:
     }
     yyval = FLOAT_TYPE_;
 }
-#line 2375 "parser.c"
+#line 2307 "parser.c"
     break;
 
   case 74: /* id_number_compression: ID  */
-#line 426 "parser.y"
-     { check_var(); yyval = get_type_from_var(copied_id); }
-#line 2381 "parser.c"
+#line 375 "parser.y"
+      { check_var(); 
+        yyval = get_type_from_var(yylineno, copied_id, current_scope);
+        int idx = lookup_var(vt, copied_id, current_scope);
+        check_isArray(idx, yylineno, copied_id);
+      }
+#line 2317 "parser.c"
     break;
 
   case 75: /* id_number_compression: number_val_spec  */
-#line 427 "parser.y"
+#line 380 "parser.y"
                   { yyval = yyvsp[0]; }
-#line 2387 "parser.c"
+#line 2323 "parser.c"
     break;
 
   case 76: /* id_number_compression: BOOL_VAL  */
-#line 428 "parser.y"
+#line 381 "parser.y"
            { yyval = BOOL_TYPE_; }
-#line 2393 "parser.c"
+#line 2329 "parser.c"
     break;
 
   case 79: /* if_expression: ID  */
-#line 437 "parser.y"
-     { check_var(); Type expr_type = get_type_from_var(copied_id); check_conditional_type(expr_type, "if"); }
-#line 2399 "parser.c"
+#line 390 "parser.y"
+     { check_var(); Type expr_type = get_type_from_var(yylineno, copied_id, current_scope); check_conditional_type(yylineno, expr_type, "if"); }
+#line 2335 "parser.c"
     break;
 
   case 80: /* if_expression: BOOL_VAL  */
-#line 438 "parser.y"
-           { check_conditional_type(BOOL_TYPE_, "if"); }
-#line 2405 "parser.c"
+#line 391 "parser.y"
+           { check_conditional_type(yylineno, BOOL_TYPE_, "if"); }
+#line 2341 "parser.c"
     break;
 
   case 83: /* $@15: %empty  */
-#line 444 "parser.y"
+#line 397 "parser.y"
          { last_decl_type = INT_TYPE_; new_var(); }
-#line 2411 "parser.c"
+#line 2347 "parser.c"
     break;
 
   case 84: /* @16: %empty  */
-#line 444 "parser.y"
+#line 397 "parser.y"
                                                                          { yyval = INT_TYPE_; }
-#line 2417 "parser.c"
+#line 2353 "parser.c"
     break;
 
   case 86: /* $@17: %empty  */
-#line 448 "parser.y"
+#line 401 "parser.y"
      { check_var(); }
-#line 2423 "parser.c"
+#line 2359 "parser.c"
     break;
 
   case 88: /* $@18: %empty  */
-#line 452 "parser.y"
+#line 405 "parser.y"
      { check_var(); }
-#line 2429 "parser.c"
+#line 2365 "parser.c"
     break;
 
   case 90: /* $@19: %empty  */
-#line 453 "parser.y"
+#line 406 "parser.y"
      { check_var(); }
-#line 2435 "parser.c"
+#line 2371 "parser.c"
     break;
 
   case 93: /* print_args: STRING_VAL  */
-#line 461 "parser.y"
+#line 414 "parser.y"
              { /* Ignora strings sem formatação */ }
-#line 2441 "parser.c"
+#line 2377 "parser.c"
     break;
 
   case 96: /* print_args: FORMAT_STRING COMMA ID  */
-#line 464 "parser.y"
-                         { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-#line 2447 "parser.c"
+#line 417 "parser.y"
+                         { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+#line 2383 "parser.c"
     break;
 
   case 97: /* print_args: FORMAT_INT COMMA ID  */
-#line 465 "parser.y"
-                      { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-#line 2453 "parser.c"
+#line 418 "parser.y"
+                      { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+#line 2389 "parser.c"
     break;
 
   case 98: /* print_args: FORMAT_FLOAT COMMA ID  */
-#line 466 "parser.y"
-                        { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-#line 2459 "parser.c"
+#line 419 "parser.y"
+                        { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+#line 2395 "parser.c"
     break;
 
   case 99: /* print_args: FORMAT_BOOL COMMA ID  */
-#line 467 "parser.y"
-                       { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
-#line 2465 "parser.c"
+#line 420 "parser.y"
+                       { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
+#line 2401 "parser.c"
     break;
 
   case 100: /* print_args: print_args COMMA FORMAT_STRING COMMA ID  */
-#line 468 "parser.y"
-                                          { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-#line 2471 "parser.c"
+#line 421 "parser.y"
+                                          { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+#line 2407 "parser.c"
     break;
 
   case 101: /* print_args: print_args COMMA FORMAT_INT COMMA ID  */
-#line 469 "parser.y"
-                                       { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-#line 2477 "parser.c"
+#line 422 "parser.y"
+                                       { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+#line 2413 "parser.c"
     break;
 
   case 102: /* print_args: print_args COMMA FORMAT_FLOAT COMMA ID  */
-#line 470 "parser.y"
-                                         { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-#line 2483 "parser.c"
+#line 423 "parser.y"
+                                         { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+#line 2419 "parser.c"
     break;
 
   case 103: /* print_args: print_args COMMA FORMAT_BOOL COMMA ID  */
-#line 471 "parser.y"
-                                        { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
-#line 2489 "parser.c"
+#line 424 "parser.y"
+                                        { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
+#line 2425 "parser.c"
     break;
 
   case 105: /* scan_args: FORMAT_STRING COMMA ADDRESS ID  */
-#line 479 "parser.y"
-                                 { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-#line 2495 "parser.c"
+#line 432 "parser.y"
+                                 { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+#line 2431 "parser.c"
     break;
 
   case 106: /* scan_args: FORMAT_INT COMMA ADDRESS ID  */
-#line 480 "parser.y"
-                              { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-#line 2501 "parser.c"
+#line 433 "parser.y"
+                              { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+#line 2437 "parser.c"
     break;
 
   case 107: /* scan_args: FORMAT_FLOAT COMMA ADDRESS ID  */
-#line 481 "parser.y"
-                                { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-#line 2507 "parser.c"
+#line 434 "parser.y"
+                                { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+#line 2443 "parser.c"
     break;
 
   case 108: /* scan_args: FORMAT_BOOL COMMA ADDRESS ID  */
-#line 482 "parser.y"
-                               { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
-#line 2513 "parser.c"
+#line 435 "parser.y"
+                               { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
+#line 2449 "parser.c"
     break;
 
   case 109: /* scan_args: scan_args COMMA FORMAT_STRING COMMA ADDRESS ID  */
-#line 483 "parser.y"
-                                                 { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, STRING_TYPE_, "%s"); }
-#line 2519 "parser.c"
+#line 436 "parser.y"
+                                                 { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); }
+#line 2455 "parser.c"
     break;
 
   case 110: /* scan_args: scan_args COMMA FORMAT_INT COMMA ADDRESS ID  */
-#line 484 "parser.y"
-                                              { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, INT_TYPE_, "%d"); }
-#line 2525 "parser.c"
+#line 437 "parser.y"
+                                              { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, INT_TYPE_, "%d"); }
+#line 2461 "parser.c"
     break;
 
   case 111: /* scan_args: scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID  */
-#line 485 "parser.y"
-                                                { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, FLOAT_TYPE_, "%g"); }
-#line 2531 "parser.c"
+#line 438 "parser.y"
+                                                { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); }
+#line 2467 "parser.c"
     break;
 
   case 112: /* scan_args: scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID  */
-#line 486 "parser.y"
-                                               { check_var(); Type var_type = get_type_from_var(copied_id); check_format_type(var_type, BOOL_TYPE_, "%t"); }
-#line 2537 "parser.c"
+#line 439 "parser.y"
+                                               { check_var(); Type var_type = get_type_from_var(yylineno, copied_id, current_scope); check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); }
+#line 2473 "parser.c"
     break;
 
   case 113: /* type_spec: INT_TYPE  */
-#line 490 "parser.y"
+#line 443 "parser.y"
               { last_decl_type = INT_TYPE_; }
-#line 2543 "parser.c"
+#line 2479 "parser.c"
     break;
 
   case 114: /* type_spec: STRING_TYPE  */
-#line 491 "parser.y"
+#line 444 "parser.y"
               { last_decl_type = STRING_TYPE_; }
-#line 2549 "parser.c"
+#line 2485 "parser.c"
     break;
 
   case 115: /* type_spec: FLOAT_TYPE  */
-#line 492 "parser.y"
+#line 445 "parser.y"
               { last_decl_type = FLOAT_TYPE_; }
-#line 2555 "parser.c"
+#line 2491 "parser.c"
     break;
 
   case 116: /* type_spec: BOOL_TYPE  */
-#line 493 "parser.y"
+#line 446 "parser.y"
               { last_decl_type = BOOL_TYPE_; }
-#line 2561 "parser.c"
+#line 2497 "parser.c"
     break;
 
   case 117: /* type_spec: VOID_TYPE  */
-#line 494 "parser.y"
+#line 447 "parser.y"
               { last_decl_type = VOID_TYPE_; }
-#line 2567 "parser.c"
+#line 2503 "parser.c"
     break;
 
   case 118: /* number_val_spec: INT_VAL  */
-#line 498 "parser.y"
+#line 451 "parser.y"
           { yyval = INT_TYPE_; }
-#line 2573 "parser.c"
+#line 2509 "parser.c"
     break;
 
   case 119: /* number_val_spec: FLOAT_VAL  */
-#line 499 "parser.y"
+#line 452 "parser.y"
             { yyval = FLOAT_TYPE_; }
-#line 2579 "parser.c"
+#line 2515 "parser.c"
     break;
 
 
-#line 2583 "parser.c"
+#line 2519 "parser.c"
 
         default: break;
       }
@@ -2814,75 +2750,70 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 520 "parser.y"
+#line 473 "parser.y"
 
 
-void check_return_type(Type return_type, Type expr_type, int has_return) {
-    if (return_type == VOID_TYPE_) {
-        if (has_return) {
-            printf("SEMANTIC ERROR (%d): 'void' function should not return a value.\n", yylineno);
+void check_array_type(Type array_type, Type expression_type, int line) {
+    if (array_type == INT_TYPE_ && expression_type != INT_TYPE_) {
+        if (expression_type == FLOAT_TYPE_) {
+            printf("SEMANTIC ERROR (%d): cannot assign 'float32' to 'int' array without explicit cast.\n", line);
+            exit(EXIT_FAILURE);
+        } else {
+            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'int' array.\n", line);
             exit(EXIT_FAILURE);
         }
-    } else if (return_type != expr_type) {
-        printf("SEMANTIC ERROR (%d): Function declared to return '%s' but returns '%s'.\n",
-               yylineno, get_text(return_type), get_text(expr_type));
-        exit(EXIT_FAILURE);
+    } else if (array_type == FLOAT_TYPE_ && expression_type != FLOAT_TYPE_) {
+        if (expression_type == INT_TYPE_) {
+            printf("SEMANTIC ERROR (%d): cannot assign 'int' to 'float32' array without explicit cast.\n", line);
+            exit(EXIT_FAILURE);
+        } else {
+            printf("SEMANTIC ERROR (%d): Incompatible type assignment to 'float32' array.\n", line);
+            exit(EXIT_FAILURE);
+        }
     }
 }
 
 
-void check_format_type(Type var_type, Type expected_type, const char *format) {
-    if (var_type != expected_type) {
-        printf("SEMANTIC ERROR (%d): Mismatched type for format specifier '%s'. Expected '%s' but got '%s'.\n",
-               yylineno, format, get_text(expected_type), get_text(var_type));
-        exit(EXIT_FAILURE);
+void check_isNotArray(int idx, int line) {
+  if (!get_isArray(vt, idx)) {
+    printf("SEMANTIC ERROR (%d): Expected array variable.\n", line);
+    exit(EXIT_FAILURE);
+  } 
+}
+
+void check_array_position_int(int line, Type postionType){
+  if(postionType != INT_TYPE_){
+      printf("SEMANTIC ERROR (%d): it is only allowed to access the array position with integers.\n", line);
+      exit(EXIT_FAILURE);
     }
 }
 
-void check_assignment_type(Type id_type, Type expr_type) {
-    if (id_type == INT_TYPE_ && expr_type != INT_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'int'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-    if (id_type == FLOAT_TYPE_ && expr_type != FLOAT_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'float32'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-    if (id_type == STRING_TYPE_ && expr_type != STRING_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'string'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-    if (id_type == BOOL_TYPE_ && expr_type != BOOL_TYPE_) {
-        printf("SEMANTIC ERROR (%d): cannot assign type '%s' to 'bool'.\n", yylineno, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
+void check_isArray(int idx, int line, char* name) {
+  if (get_isArray(vt, idx)) {
+    printf("SEMANTIC ERROR (%d): Array variable '%s' used without index.\n", line, name);
+    exit(EXIT_FAILURE);
+  }
 }
+        
 
-void check_conditional_type(Type expr_type, char *op) {
-    if (expr_type != BOOL_TYPE_) {
-        printf("SEMANTIC ERROR (%d): conditional expression in '%s' is '%s' instead of 'bool'.\n",
-               yylineno, op, get_text(expr_type));
-        exit(EXIT_FAILURE);
-    }
-}
-
-Type get_type_from_func(char *name) {
+Type get_type_from_func(int line, char *name) {
     int idx = lookup_func(ft, name);
     if (idx == -1) {
-        printf("SEMANTIC ERROR (%d): function '%s' was not declared.\n", yylineno, name);
+        printf("SEMANTIC ERROR (%d): function '%s' was not declared.\n", line, name);
         exit(EXIT_FAILURE);
     }
     return get_func_type(ft, idx);
 }
 
-Type get_type_from_var(char *name) {
-    int idx = lookup_var(vt, name, current_scope);
+Type get_type_from_var(int line, char *name, int current_scope2) {
+    int idx = lookup_var(vt, name, current_scope2);
     if (idx == -1) {
-        printf("SEMANTIC ERROR (%d): variable '%s' was not declared.\n", yylineno, name);
+        printf("SEMANTIC ERROR (%d): variable '%s' was not declared.\n", line, name);
         exit(EXIT_FAILURE);
     }
     return get_type(vt, idx);
 }
+
 
 void check_var() {
     /*printf("DEBUG: Checking variable %s at line %d, scope %d\n", copied_id, yylineno, current_scope);*/
@@ -2960,15 +2891,6 @@ int main() {
 
     yyparse();
     printf("PARSE SUCCESSFUL!\n");
-
-    // Verifica se a raiz da AST foi construída
-    if (root != NULL) {
-        // Imprime a AST em formato dot
-        print_dot(root);
-
-        // Libera a memória utilizada pela AST
-        free_tree(root);
-    }
 
     printf("\n\n");
     print_str_table(st); printf("\n\n");

@@ -59,6 +59,7 @@ typedef struct {
   int line;
   Type type;
   int scope;
+  int isArray;
 } Entry;
 
 struct var_table {
@@ -86,9 +87,19 @@ int add_var(VarTable* vt, char* s, int line, Type type, int scope) {
     vt->t[vt->size].line = line;
     vt->t[vt->size].type = type;
     vt->t[vt->size].scope = scope; // Definindo o escopo
+    vt->t[vt->size].isArray = 0;
     int idx_added = vt->size;
     vt->size++;
     return idx_added;
+}
+
+void set_isArray_by_idx(VarTable *vt, int idx, int isArray) {
+    if (idx != -1 && idx < vt->size) {
+        vt->t[idx].isArray = isArray;
+    } else {
+        printf("SEMANTIC ERROR: Invalid index %d for set_isArray.\n", idx);
+        exit(EXIT_FAILURE);
+    }
 }
 
 char* get_name(VarTable* vt, int i) {
@@ -103,6 +114,10 @@ int get_scope(VarTable* vt, int i) {
     return vt->t[i].scope;
 }
 
+int get_isArray(VarTable* vt, int i) {
+    return vt->t[i].isArray;
+}
+
 Type get_type(VarTable* vt, int i) {
     return vt->t[i].type;
 }
@@ -110,8 +125,8 @@ Type get_type(VarTable* vt, int i) {
 void print_var_table(VarTable* vt) {
     printf("Variables table:\n");
     for (int i = 0; i < vt->size; i++) {
-        printf("Entry %d -- name: %s, line: %d, type: %s, scope: %d\n", i,
-               get_name(vt, i), get_line(vt, i), get_text(get_type(vt, i)), get_scope(vt, i));
+        printf("Entry %d -- name: %s, line: %d, type: %s, scope: %d, isArray: %d\n", i,
+               get_name(vt, i), get_line(vt, i), get_text(get_type(vt, i)), get_scope(vt, i), get_isArray(vt, i));
     }
 }
 
