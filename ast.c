@@ -1,4 +1,3 @@
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +6,9 @@
 #include "tables.h"
 #include "types.h"
 
-#define CHILDREN_LIMIT 20 // Don't try this at home, kids... :P
+// AST
+//----------------------------------------------------------------------------------
+#define CHILDREN_LIMIT 100 // Don't try this at home, kids... :P
 
 struct node {
     NodeKind kind;
@@ -30,6 +31,35 @@ AST* new_node(NodeKind kind, int data, Type type) {
         node->child[i] = NULL;
     }
     return node;
+}
+
+AST* new_node_int(NodeKind kind, int value, Type type) {
+    AST* node = malloc(sizeof * node);
+    node->kind = kind;
+    node->data.as_int = value;
+    node->type = type;
+    node->count = 0;
+    for (int i = 0; i < CHILDREN_LIMIT; i++) {
+        node->child[i] = NULL;
+    }
+    return node;
+}
+
+AST* new_node_float(NodeKind kind, float value, Type type) {
+    AST* node = malloc(sizeof * node);
+    node->kind = kind;
+    node->data.as_float = value;
+    node->type = type;
+    node->count = 0;
+    for (int i = 0; i < CHILDREN_LIMIT; i++) {
+        node->child[i] = NULL;
+    }
+    return node;
+}
+
+AST* new_node_bool(NodeKind kind, int value, Type type) {
+    // Bool values can still be treated as int (0 or 1)
+    return new_node_int(kind, value, type);
 }
 
 void add_child(AST *parent, AST *child) {
@@ -101,28 +131,42 @@ extern VarTable *vt;
 
 char* kind2str(NodeKind kind) {
     switch(kind) {
-        case ASSIGN_NODE:   return "=";
-        case EQ_NODE:       return "==";
-        case BLOCK_NODE:    return "block";
-        case BOOL_VAL_NODE: return "";
-        case IF_NODE:       return "if";
-        case REPEAT_NODE:   return "repeat";
-        case INT_VAL_NODE:  return "";
-        case MINUS_NODE:    return "-";
-        case OVER_NODE:     return "/";
-        case PLUS_NODE:     return "+";
-        case PROGRAM_NODE:  return "program";
-        case READ_NODE:     return "read";
-        case FLOAT_VAL_NODE: return "";
-        case STR_VAL_NODE:  return "";
-        case TIMES_NODE:    return "*";
-        case VAR_DECL_NODE: return "var_decl";
-        case VAR_LIST_NODE: return "var_list";
-        case VAR_USE_NODE:  return "var_use";
-        case WRITE_NODE:    return "write";
-        case F2I_NODE:      return "B2I";
-        case I2F_NODE:      return "I2R";
-        default:            return "ERROR!!";
+        case ASSIGN_NODE:       return "=";
+        case EQ_NODE:           return "==";
+        case BLOCK_NODE:        return "block";
+        case BOOL_VAL_NODE:     return "bool_val";
+        case IF_NODE:           return "if";
+        case FOR_NODE:          return "for";
+        case INT_VAL_NODE:      return "int_val";
+        case MINUS_NODE:        return "-";
+        case OVER_NODE:         return "/";
+        case PLUS_NODE:         return "+";
+        case REST_NODE:         return "%";
+        case TIMES_NODE:        return "*";
+        case LESS_NODE:         return "<";
+        case MORE_NODE:         return ">";
+        case LESS_EQUAL_NODE:   return "<=";
+        case MORE_EQUAL_NODE:   return ">=";
+        case DIFERS_NODE:       return "!=";
+        case AND_NODE:          return "&&";
+        case OR_NODE:           return "||";
+        case NOT_NODE:          return "!";
+        case EQUALS_NODE:       return "==";
+        case COMPARE_NODE:      return "";
+        case PROGRAM_NODE:      return "program";
+        case MAIN_NODE:         return "main";
+        case FLOAT_VAL_NODE:    return "float_val";
+        case STR_VAL_NODE:      return "str_val";
+        case VAR_DECL_NODE:     return "var_decl";
+        case VAR_USE_NODE:      return "var_use";
+        case ARRAY_ACCESS_NODE: return "array_access";
+        case ARRAY_DECL_NODE:   return "array_decl";
+        case WRITE_NODE:        return "print";
+        case READ_NODE:        return "scanf";
+        case FUNC_CALL_NODE:    return "func_call";
+        case F2I_NODE:          return "F2I";
+        case I2F_NODE:          return "I2F";
+        default:                return "ERROR!!";
     }
 }
 

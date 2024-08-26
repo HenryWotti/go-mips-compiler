@@ -944,7 +944,7 @@ case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
 #line 35 "scanner.l"
-{  add_string(st, yytext); process_token(STRING_VAL); }
+{  process_token(STRING_VAL); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
@@ -1018,12 +1018,12 @@ YY_RULE_SETUP
 case 19:
 YY_RULE_SETUP
 #line 56 "scanner.l"
-{   process_token(BOOL_VAL);}
+{   yylval = new_node_bool(BOOL_VAL_NODE, 1, BOOL_TYPE_); process_token(BOOL_VAL); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 57 "scanner.l"
-{   process_token(BOOL_VAL);}
+{   yylval = new_node_bool(BOOL_VAL_NODE, 0, BOOL_TYPE_); process_token(BOOL_VAL); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
@@ -1236,12 +1236,12 @@ YY_RULE_SETUP
 case 59:
 YY_RULE_SETUP
 #line 127 "scanner.l"
-{   process_token(FLOAT_VAL); }
+{   yylval = new_node_float(FLOAT_VAL_NODE, atof(yytext), FLOAT_TYPE_); process_token(FLOAT_VAL); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
 #line 128 "scanner.l"
-{   process_token(INT_VAL); }
+{   yylval = new_node_int(INT_VAL_NODE, atoi(yytext), INT_TYPE_); process_token(INT_VAL); }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP

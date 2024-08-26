@@ -93,5 +93,4 @@ func main() {
         fmt.Println("Valor:");
         fmt.Println(arr[i]);
     }
-    fmt.Println(arr);
 }

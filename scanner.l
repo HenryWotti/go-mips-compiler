@@ -31,7 +31,7 @@ extern char copied_id[128];
 "\"%d\""                 {  process_token(FORMAT_INT); }
 "\"%g\""                 {  process_token(FORMAT_FLOAT); }
 "\"%t\""                 {  process_token(FORMAT_BOOL); }
-\"[^\"]*\"               {  add_string(st, yytext); process_token(STRING_VAL); }
+\"[^\"]*\"               {  process_token(STRING_VAL); }
 
 "//".*                                      { /*ignorado*/ }             
 
@@ -52,8 +52,8 @@ extern char copied_id[128];
 "fmt.Println"           {   process_token(PRINTLN); }
 "fmt.Scanf"             {   process_token(SCANF); }                                                                              
 "var"                   {   process_token(VAR); }
-"true"                  {   process_token(BOOL_VAL);}
-"false"                 {   process_token(BOOL_VAL);}
+"true"                  {   yylval = new_node_bool(BOOL_VAL_NODE, 1, BOOL_TYPE_); process_token(BOOL_VAL); }
+"false"                 {   yylval = new_node_bool(BOOL_VAL_NODE, 0, BOOL_TYPE_); process_token(BOOL_VAL); }
 "%s"                    {   process_token(FORMAT_STRING); }
 "%d"                    {   process_token(FORMAT_INT); }
 "%g"                    {   process_token(FORMAT_FLOAT); }
@@ -123,8 +123,8 @@ extern char copied_id[128];
 // Numeros e letras
 %}
 
-[0-9]{1,6}[.][0-9]{0,6}     {   process_token(FLOAT_VAL); }
-[0-9]+                      {   process_token(INT_VAL); }
+[0-9]{1,6}[.][0-9]{0,6}     {   yylval = new_node_float(FLOAT_VAL_NODE, atof(yytext), FLOAT_TYPE_); process_token(FLOAT_VAL); }
+[0-9]+                      {   yylval = new_node_int(INT_VAL_NODE, atoi(yytext), INT_TYPE_); process_token(INT_VAL); }
 [a-zA-Z]+[a-zA-Z0-9]*       {   strcpy(copied_id, yytext); process_token(ID); }             
 \n                          {   /*ignorado*/  }
 [ \t\r]+                    {   /*ignorado*/  }
