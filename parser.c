@@ -94,6 +94,7 @@ extern char *yytext;
 extern int yylineno;
 
 Type id_type; //guarda o tipo do ID
+Type id_type2; //guarda o tipo do ID
 Type array_type; //gurda o tipo do Array
 FuncTable *ft; //tabela de funções
 StrTable *st; //tabela de strings
@@ -106,17 +107,19 @@ int has_return = 0; //flag que é marcada caso a funcao não tenha void como ret
 int current_func_idx; //pega o index da funcao, para achar ela na function table e colocar os valores corretor de param_types, type e param_count
 int func_idx; //pega o index da funcao
 int idx;
+int idx2;
 
 Type arg_types[10]; //guarda os tipos de todos os argumentos chamados na chamada de uma função
 
 char copied_id[128]; //copia o ultimo id visto
+char copied_id_array[128]; //copia o ultimo id visto auxiliar para array
 char copied_func_id[128]; //copia o ultimo id de funcao visto
 
 Type last_decl_type; //tipo mais recente declarado
 
 AST *ast_root = NULL;
 
-#line 120 "parser.c"
+#line 123 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -226,7 +229,7 @@ enum yysymbol_kind_t
   YYSYMBOL_assign_val = 79,                /* assign_val  */
   YYSYMBOL_80_8 = 80,                      /* $@8  */
   YYSYMBOL_array_printable = 81,           /* array_printable  */
-  YYSYMBOL_82_9 = 82,                      /* @9  */
+  YYSYMBOL_82_9 = 82,                      /* $@9  */
   YYSYMBOL_array_declaration = 83,         /* array_declaration  */
   YYSYMBOL_array_assign = 84,              /* array_assign  */
   YYSYMBOL_85_10 = 85,                     /* @10  */
@@ -244,12 +247,12 @@ enum yysymbol_kind_t
   YYSYMBOL_if_statement = 97,              /* if_statement  */
   YYSYMBOL_if_expression = 98,             /* if_expression  */
   YYSYMBOL_for_statement = 99,             /* for_statement  */
-  YYSYMBOL_100_15 = 100,                   /* @15  */
+  YYSYMBOL_100_15 = 100,                   /* $@15  */
   YYSYMBOL_for_comparison = 101,           /* for_comparison  */
-  YYSYMBOL_102_16 = 102,                   /* @16  */
+  YYSYMBOL_102_16 = 102,                   /* $@16  */
   YYSYMBOL_for_update = 103,               /* for_update  */
-  YYSYMBOL_104_17 = 104,                   /* @17  */
-  YYSYMBOL_105_18 = 105,                   /* @18  */
+  YYSYMBOL_104_17 = 104,                   /* $@17  */
+  YYSYMBOL_105_18 = 105,                   /* $@18  */
   YYSYMBOL_print_operation = 106,          /* print_operation  */
   YYSYMBOL_print_args = 107,               /* print_args  */
   YYSYMBOL_scanf_operation = 108,          /* scanf_operation  */
@@ -374,7 +377,7 @@ typedef int yytype_uint16;
 
 
 /* Stored state numbers (used for stacks). */
-typedef yytype_int16 yy_state_t;
+typedef yytype_uint8 yy_state_t;
 
 /* State numbers in computations.  */
 typedef int yy_state_fast_t;
@@ -562,16 +565,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  5
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   274
+#define YYLAST   247
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  58
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  56
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  130
+#define YYNRULES  122
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  271
+#define YYNSTATES  246
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   312
@@ -626,20 +629,19 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   124,   124,   130,   134,   135,   135,   139,   139,   145,
-     151,   152,   156,   157,   156,   164,   165,   165,   169,   176,
-     179,   186,   187,   188,   189,   190,   191,   192,   193,   194,
-     195,   196,   197,   196,   204,   208,   217,   223,   223,   236,
-     236,   248,   258,   258,   273,   278,   284,   285,   286,   287,
-     296,   305,   307,   305,   315,   316,   316,   321,   321,   328,
-     332,   335,   338,   344,   345,   349,   357,   370,   383,   396,
-     409,   417,   425,   432,   442,   447,   448,   452,   455,   461,
-     467,   471,   474,   480,   480,   491,   491,   500,   500,   506,
-     506,   515,   521,   525,   526,   527,   533,   539,   545,   551,
-     558,   565,   572,   582,   588,   594,   600,   606,   612,   619,
-     626,   633,   643,   644,   645,   646,   647,   651,   652,   656,
-     657,   658,   659,   660,   661,   662,   666,   667,   668,   669,
-     670
+       0,   127,   127,   133,   137,   138,   138,   142,   142,   148,
+     154,   155,   159,   160,   159,   167,   168,   168,   172,   179,
+     182,   189,   190,   191,   192,   193,   194,   195,   196,   197,
+     198,   199,   200,   199,   207,   211,   220,   226,   226,   239,
+     239,   251,   267,   267,   282,   287,   293,   294,   295,   296,
+     305,   314,   316,   314,   324,   325,   325,   330,   330,   337,
+     341,   344,   347,   353,   354,   358,   366,   380,   394,   408,
+     422,   430,   438,   446,   457,   462,   463,   467,   470,   476,
+     482,   486,   489,   496,   496,   523,   523,   532,   532,   545,
+     545,   561,   567,   571,   572,   628,   634,   640,   646,   652,
+     658,   665,   672,   679,   689,   690,   691,   692,   693,   697,
+     698,   702,   703,   704,   705,   706,   707,   708,   712,   713,
+     714,   715,   716
 };
 #endif
 
@@ -669,14 +671,14 @@ static const char *const yytname[] =
   "func_main", "$@2", "block", "list_func_generic", "func_generic", "$@3",
   "$@4", "argument_list", "$@5", "return_statement", "statement_list",
   "statement", "$@6", "$@7", "string_list", "val_declaration",
-  "assign_val", "$@8", "array_printable", "@9", "array_declaration",
+  "assign_val", "$@8", "array_printable", "$@9", "array_declaration",
   "array_assign", "@10", "id_int_compression", "assign_expression", "$@11",
   "$@12", "argument_list_call", "$@13", "$@14", "argument_val",
   "comma_expression", "operator_expression", "id_number_compression",
-  "if_statement", "if_expression", "for_statement", "@15",
-  "for_comparison", "@16", "for_update", "@17", "@18", "print_operation",
-  "print_args", "scanf_operation", "scan_args", "type_spec",
-  "number_val_spec", "comparadors", "operators", YY_NULLPTR
+  "if_statement", "if_expression", "for_statement", "$@15",
+  "for_comparison", "$@16", "for_update", "$@17", "$@18",
+  "print_operation", "print_args", "scanf_operation", "scan_args",
+  "type_spec", "number_val_spec", "comparadors", "operators", YY_NULLPTR
 };
 
 static const char *
@@ -686,7 +688,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-150)
+#define YYPACT_NINF (-141)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -700,91 +702,85 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-       6,   -20,    38,    29,  -150,  -150,    36,  -150,  -150,    41,
-      29,   -36,  -150,  -150,  -150,  -150,  -150,    16,    20,    18,
-      34,   148,    43,    33,  -150,  -150,  -150,  -150,  -150,  -150,
-     148,    30,  -150,    31,  -150,  -150,    42,    50,    24,    45,
-     -31,    67,    70,    66,    12,  -150,    65,    72,    73,    82,
-      83,  -150,  -150,    85,    87,  -150,    18,    33,  -150,   132,
-     132,  -150,  -150,    46,   118,   120,   113,    33,  -150,   132,
-     132,  -150,   135,    65,  -150,  -150,   136,    94,   150,   121,
-     149,     4,   124,  -150,  -150,  -150,   182,  -150,  -150,  -150,
-    -150,  -150,  -150,  -150,  -150,   144,  -150,   158,   159,  -150,
-    -150,  -150,  -150,  -150,  -150,  -150,   132,  -150,  -150,  -150,
-    -150,  -150,   132,    74,   190,   161,   162,   164,   160,  -150,
-      56,    24,   -32,  -150,   163,   152,   154,   155,   156,  -150,
-    -150,   -29,   157,   165,   166,   167,   -23,  -150,   168,   136,
-     136,  -150,  -150,   132,   132,  -150,    33,   136,   136,    56,
-     169,  -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,
-    -150,   171,   174,   173,   175,   176,   177,  -150,   128,   170,
-     178,   179,   180,  -150,   137,   183,    80,    84,   186,   187,
-    -150,  -150,   148,    31,   188,    31,   185,   -32,  -150,  -150,
-    -150,  -150,   184,   189,   191,   192,   193,   195,   198,   199,
-     196,   197,   200,   201,   203,   132,   132,  -150,   132,   132,
-    -150,  -150,  -150,   208,  -150,    56,   204,    56,    24,   194,
-     209,   210,   211,   212,  -150,  -150,  -150,  -150,   181,   213,
-     214,   215,  -150,   205,   221,   222,   223,   224,  -150,  -150,
-    -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,   220,   225,
-     226,   227,   120,   228,  -150,  -150,  -150,  -150,  -150,  -150,
-    -150,  -150,   132,   244,    33,  -150,   216,   245,  -150,  -150,
-    -150
+       2,   -34,    26,    19,  -141,  -141,    38,  -141,  -141,    34,
+      19,   -35,  -141,  -141,  -141,  -141,  -141,    27,    50,    15,
+      55,   100,    60,    33,  -141,  -141,  -141,  -141,  -141,  -141,
+     100,    12,  -141,    52,  -141,  -141,    29,    36,    24,    62,
+      37,    72,   118,   110,     1,  -141,   120,   123,   124,   125,
+     126,  -141,  -141,   127,   128,  -141,    15,    33,  -141,     5,
+       5,  -141,  -141,   137,   138,   111,   104,    33,  -141,     5,
+       5,  -141,   143,   120,  -141,  -141,   136,    20,   144,   134,
+     145,    46,    94,  -141,  -141,  -141,   176,  -141,  -141,  -141,
+    -141,  -141,  -141,  -141,  -141,   139,  -141,   149,   150,  -141,
+    -141,  -141,  -141,  -141,  -141,  -141,     5,  -141,  -141,  -141,
+    -141,  -141,     5,    51,   181,   152,   153,   155,   151,  -141,
+      56,    24,    81,  -141,   156,  -141,  -141,   158,   142,   146,
+     147,   148,   -29,  -141,   157,   136,   136,  -141,  -141,     5,
+       5,  -141,    33,   136,   136,    56,   160,  -141,  -141,  -141,
+    -141,  -141,  -141,  -141,  -141,  -141,  -141,   163,   165,  -141,
+     159,   161,   162,   164,  -141,   112,   166,    67,    78,   167,
+     168,  -141,  -141,   100,    52,   169,    52,   170,    81,   171,
+     173,   174,   175,   172,   177,   178,   179,   180,     5,     5,
+    -141,     5,     5,  -141,  -141,  -141,   184,  -141,    56,   182,
+      56,    24,   185,  -141,  -141,  -141,  -141,   183,   186,   187,
+     188,  -141,   190,   189,   194,   196,   197,  -141,  -141,  -141,
+    -141,  -141,  -141,   195,   198,   199,   200,   111,   201,  -141,
+    -141,  -141,  -141,  -141,  -141,  -141,  -141,     5,   193,    33,
+    -141,   192,   217,  -141,  -141,  -141
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
    Performed when YYTABLE does not specify something else to do.  Zero
    means the default is an error.  */
-static const yytype_uint8 yydefact[] =
+static const yytype_int8 yydefact[] =
 {
        0,     0,     0,     4,     3,     1,     0,    10,     5,     0,
        4,     0,     2,    11,     6,    12,     7,     0,     0,    15,
-       0,     0,     0,     0,   112,   114,   113,   116,   115,    16,
+       0,     0,     0,     0,   104,   106,   105,   108,   107,    16,
        0,     0,     8,    63,    13,    34,     0,     0,     0,     0,
       31,     0,     0,     0,     0,    19,    29,     0,     0,     0,
        0,    21,    22,     0,     0,    64,    15,     0,    83,     0,
-       0,   118,   117,    76,    74,     0,     0,     0,    75,     0,
+       0,   110,   109,    76,    74,     0,     0,     0,    75,     0,
        0,    76,    74,    46,    18,    48,    47,     0,     0,     0,
        0,     0,     0,    30,     9,    20,     0,    24,    23,    25,
-      26,    27,    28,    17,    14,     0,    74,     0,     0,   125,
-     121,   122,   119,   120,   123,   124,     0,   126,   127,   128,
-     129,   130,     0,     0,    77,     0,     0,     0,     0,    36,
-      54,     0,     0,    92,    74,     0,     0,     0,     0,    94,
-      93,     0,     0,     0,     0,     0,     0,    35,     0,     0,
-       0,    82,    81,     0,     0,    65,     0,    50,    49,    54,
-       0,    59,    62,    61,    60,    55,    32,    57,    38,    45,
-      44,     0,     0,     0,     0,     0,     0,    91,     0,     0,
-       0,     0,     0,   103,     0,     0,     0,     0,     0,     0,
-      78,    52,     0,    63,     0,    63,     0,     0,    95,    96,
-      97,    98,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,    68,     0,     0,
-      66,    69,    67,     0,    41,    54,     0,    54,     0,     0,
-       0,     0,     0,     0,   104,   105,   106,   107,     0,     0,
-       0,     0,    85,     0,     0,     0,     0,     0,    53,    56,
-      33,    58,    43,    40,    99,   100,   101,   102,     0,     0,
-       0,     0,     0,     0,    73,    71,    70,    72,   108,   109,
-     110,   111,     0,    87,     0,    86,     0,     0,    84,    88,
-      90
+      26,    27,    28,    17,    14,     0,    74,     0,     0,   117,
+     113,   114,   111,   112,   115,   116,     0,   118,   119,   120,
+     121,   122,     0,     0,    77,     0,     0,     0,     0,    36,
+      54,     0,     0,    92,    39,    94,    93,     0,     0,     0,
+       0,     0,     0,    35,     0,     0,     0,    82,    81,     0,
+       0,    65,     0,    50,    49,    54,     0,    59,    62,    61,
+      60,    55,    32,    57,    38,    45,    44,     0,     0,    91,
+       0,     0,     0,     0,    95,     0,     0,     0,     0,     0,
+       0,    78,    52,     0,    63,     0,    63,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      68,     0,     0,    66,    69,    67,     0,    41,    54,     0,
+      54,     0,     0,    96,    97,    98,    99,     0,     0,     0,
+       0,    85,     0,     0,     0,     0,     0,    53,    56,    33,
+      58,    43,    40,     0,     0,     0,     0,     0,     0,    73,
+      71,    70,    72,   100,   101,   102,   103,     0,    87,     0,
+      86,     0,     0,    84,    88,    90
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -150,  -150,  -150,   202,  -150,  -150,  -150,   -56,  -150,  -150,
-    -150,  -150,   217,  -150,  -150,  -150,   230,  -150,  -150,   -13,
-    -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,    26,  -117,
-    -150,  -150,  -144,  -150,  -150,  -150,  -149,   231,   -37,  -150,
-    -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,
-    -150,  -150,   -27,  -150,   -64,   -44
+    -141,  -141,  -141,   212,  -141,  -141,  -141,   -56,  -141,  -141,
+    -141,  -141,   191,  -141,  -141,  -141,   202,  -141,  -141,   -13,
+    -141,  -141,  -141,  -141,  -141,  -141,  -141,  -141,    28,  -117,
+    -141,  -141,  -140,  -141,  -141,  -141,   -12,   203,   -37,  -141,
+    -141,  -141,  -141,  -141,  -141,  -141,  -141,  -141,  -141,  -141,
+    -141,  -141,   -27,  -141,   -64,   -31
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_int16 yydefgoto[] =
+static const yytype_uint8 yydefgoto[] =
 {
        0,     2,     3,     7,    10,    12,    18,    32,     9,    13,
-      17,    57,    22,    33,    43,    44,    45,    78,   184,    73,
-      47,    48,    79,   129,   162,    49,    50,    80,   161,    74,
-     117,   213,   156,   183,   185,   157,    56,    75,    76,    51,
-      67,    52,    95,   233,   252,   264,   266,   267,    53,   131,
-      54,   136,    29,    68,   106,   113
+      17,    57,    22,    33,    43,    44,    45,    78,   175,    73,
+      47,    48,    79,   125,   158,    49,    50,    80,   157,    74,
+     117,   196,   152,   174,   176,   153,    56,    75,    76,    51,
+      67,    52,    95,   212,   227,   239,   241,   242,    53,   127,
+      54,   132,    29,    68,   106,   113
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -792,66 +788,60 @@ static const yytype_int16 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-      66,    94,   112,    34,   158,   181,   -42,   167,    15,   123,
-     159,   114,   160,   173,    16,   -37,     1,    35,    46,    36,
-     168,    37,    97,    98,    38,    39,   174,    69,    70,    35,
-       4,    46,   115,   116,   215,    35,   217,    36,     5,    37,
-       6,     8,    38,    39,   130,    61,    62,    71,   124,    11,
-     119,    19,    84,    59,    60,    20,    40,   125,   126,   127,
-     128,   151,    21,    41,    42,    61,    62,    71,    72,   141,
-      23,   239,    31,   241,    40,   142,   145,   143,   144,    30,
-      55,    41,    42,   205,   206,   -80,    58,   208,   209,    77,
-     180,    61,    62,    63,    64,   176,   177,   152,   153,   154,
-     155,   242,    81,   176,   177,    82,   178,   179,    24,    25,
-      26,    27,    28,    83,    86,    61,    62,    71,    96,    87,
-      88,    61,    62,    71,    96,    61,    62,    71,    96,    89,
-      90,   118,    91,   107,    92,   108,   109,   110,   111,   207,
-     210,    99,   100,   101,   102,   103,   104,   105,    99,   100,
-     101,   102,   103,   104,   105,   214,   107,   -79,   108,   109,
-     110,   111,    24,    25,    26,    27,    28,   121,   234,   235,
-     -51,   236,   237,    61,    62,    71,    96,   132,   133,   134,
-     135,   192,   193,   194,   195,   120,   122,   137,   262,   138,
-     200,   201,   202,   203,   139,   140,   146,   147,   148,   149,
-     -39,   163,   150,   164,   165,   166,   169,   182,   268,   186,
-     175,   187,    14,   219,   170,   171,   172,   188,   196,   189,
-     190,   191,   211,   212,   216,   265,   197,   198,   199,   248,
-     204,   218,   243,   220,     0,   269,     0,   224,   221,   225,
-     222,   223,   226,   227,   238,   228,   229,   232,     0,   230,
-     231,   240,   253,   244,   245,   246,   247,   254,   255,   256,
-     257,   249,   250,   251,   258,   -89,   270,     0,    65,   259,
-     260,   261,   263,    93,    85
+      66,    94,   112,    34,   154,   172,    35,   164,    36,    15,
+      37,   114,     1,    38,    39,    16,     4,    35,    46,    36,
+     165,    37,    97,    98,    38,    39,     5,    69,    70,    35,
+       6,    46,   115,   116,    24,    25,    26,    27,    28,    59,
+      60,    84,    11,     8,   126,    40,    61,    62,    71,    96,
+     119,   123,    41,    42,   139,   140,    40,   118,   218,    21,
+     220,   147,    19,    41,    42,    61,    62,    71,    72,   137,
+     188,   189,    31,    58,   -42,   138,   141,    61,    62,    63,
+      64,   191,   192,   -37,   221,    20,   171,    61,    62,    71,
+     124,    23,    61,    62,    71,    96,    30,   148,   149,   150,
+     151,    55,   169,   170,   167,   168,    77,    81,    61,    62,
+      71,    96,   167,   168,    24,    25,    26,    27,    28,    61,
+      62,    71,    96,   155,   107,   156,   108,   109,   110,   111,
+     190,   193,    99,   100,   101,   102,   103,   104,   105,    99,
+     100,   101,   102,   103,   104,   105,   197,   128,   129,   130,
+     131,   213,   214,    82,   215,   216,   107,    83,   108,   109,
+     110,   111,   198,   237,   200,   183,   184,   185,   186,    86,
+      87,    88,    89,    90,    91,    92,   -80,   -79,   -51,   120,
+     121,   133,   122,   243,   134,   135,   136,   142,   143,   144,
+     145,   160,   -74,   146,   159,   161,   162,   163,   173,   166,
+     240,   177,   178,   194,   195,   199,   202,   179,     0,   180,
+     181,   244,   182,   187,   -89,   203,   201,   204,   205,   206,
+     217,   207,    14,   222,   211,   229,   208,   209,   210,   219,
+     230,   223,   231,   232,   224,   225,   226,   228,   245,   233,
+      65,     0,   234,   235,   236,   238,    85,    93
 };
 
 static const yytype_int16 yycheck[] =
 {
-      37,    57,    66,    30,   121,   149,    37,    36,    44,     5,
-      42,    67,    44,    36,    50,    46,    10,     5,    31,     7,
-      49,     9,    59,    60,    12,    13,    49,     3,     4,     5,
-      50,    44,    69,    70,   183,     5,   185,     7,     0,     9,
-      11,     5,    12,    13,    81,    41,    42,    43,    44,     8,
-      77,    35,    40,     3,     4,    35,    44,    53,    54,    55,
-      56,     5,    44,    51,    52,    41,    42,    43,    44,   106,
-      36,   215,    39,   217,    44,   112,   113,     3,     4,    36,
-      49,    51,    52,     3,     4,    39,    44,     3,     4,    44,
-     146,    41,    42,    43,    44,   139,   140,    41,    42,    43,
-      44,   218,    35,   147,   148,    35,   143,   144,    14,    15,
-      16,    17,    18,    47,    49,    41,    42,    43,    44,    47,
-      47,    41,    42,    43,    44,    41,    42,    43,    44,    47,
-      47,    37,    47,    20,    47,    22,    23,    24,    25,   176,
-     177,    28,    29,    30,    31,    32,    33,    34,    28,    29,
-      30,    31,    32,    33,    34,   182,    20,    39,    22,    23,
-      24,    25,    14,    15,    16,    17,    18,    46,   205,   206,
-      35,   208,   209,    41,    42,    43,    44,    53,    54,    55,
-      56,    53,    54,    55,    56,    35,    37,     5,   252,    45,
-      53,    54,    55,    56,    36,    36,     6,    36,    36,    35,
-      37,    49,    42,    49,    49,    49,    49,    38,   264,    38,
-      42,    37,    10,   187,    49,    49,    49,    44,    48,    44,
-      44,    44,    36,    36,    36,   262,    48,    48,    48,    48,
-      47,    46,    38,    49,    -1,    19,    -1,    44,    49,    44,
-      49,    49,    44,    44,    36,    49,    49,    44,    -1,    49,
-      49,    47,    47,    44,    44,    44,    44,    36,    36,    36,
-      36,    48,    48,    48,    44,    21,    21,    -1,    37,    44,
-      44,    44,    44,    56,    44
+      37,    57,    66,    30,   121,   145,     5,    36,     7,    44,
+       9,    67,    10,    12,    13,    50,    50,     5,    31,     7,
+      49,     9,    59,    60,    12,    13,     0,     3,     4,     5,
+      11,    44,    69,    70,    14,    15,    16,    17,    18,     3,
+       4,    40,     8,     5,    81,    44,    41,    42,    43,    44,
+      77,     5,    51,    52,     3,     4,    44,    37,   198,    44,
+     200,     5,    35,    51,    52,    41,    42,    43,    44,   106,
+       3,     4,    39,    44,    37,   112,   113,    41,    42,    43,
+      44,     3,     4,    46,   201,    35,   142,    41,    42,    43,
+      44,    36,    41,    42,    43,    44,    36,    41,    42,    43,
+      44,    49,   139,   140,   135,   136,    44,    35,    41,    42,
+      43,    44,   143,   144,    14,    15,    16,    17,    18,    41,
+      42,    43,    44,    42,    20,    44,    22,    23,    24,    25,
+     167,   168,    28,    29,    30,    31,    32,    33,    34,    28,
+      29,    30,    31,    32,    33,    34,   173,    53,    54,    55,
+      56,   188,   189,    35,   191,   192,    20,    47,    22,    23,
+      24,    25,   174,   227,   176,    53,    54,    55,    56,    49,
+      47,    47,    47,    47,    47,    47,    39,    39,    35,    35,
+      46,     5,    37,   239,    45,    36,    36,     6,    36,    36,
+      35,    49,    36,    42,    36,    49,    49,    49,    38,    42,
+     237,    38,    37,    36,    36,    36,   178,    48,    -1,    48,
+      48,    19,    48,    47,    21,    44,    46,    44,    44,    44,
+      36,    49,    10,    38,    44,    36,    49,    49,    49,    47,
+      36,    48,    36,    36,    48,    48,    48,    47,    21,    44,
+      37,    -1,    44,    44,    44,    44,    44,    56
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
@@ -870,22 +860,19 @@ static const yytype_int8 yystos[] =
       47,    47,    47,    70,    65,   100,    44,    96,    96,    28,
       29,    30,    31,    32,    33,    34,   112,    20,    22,    23,
       24,    25,   112,   113,    65,    96,    96,    88,    37,   110,
-      35,    46,    37,     5,    44,    53,    54,    55,    56,    81,
-      96,   107,    53,    54,    55,    56,   109,     5,    45,    36,
-      36,    96,    96,     3,     4,    96,     6,    36,    36,    35,
-      42,     5,    41,    42,    43,    44,    90,    93,    87,    42,
-      44,    86,    82,    49,    49,    49,    49,    36,    49,    49,
-      49,    49,    49,    36,    49,    42,   113,   113,    96,    96,
-      65,    90,    38,    91,    76,    92,    38,    37,    44,    44,
-      44,    44,    53,    54,    55,    56,    48,    48,    48,    48,
-      53,    54,    55,    56,    47,     3,     4,    96,     3,     4,
-      96,    36,    36,    89,   110,    94,    36,    94,    46,    86,
-      49,    49,    49,    49,    44,    44,    44,    44,    49,    49,
-      49,    49,    44,   101,    96,    96,    96,    96,    36,    90,
-      47,    90,    87,    38,    44,    44,    44,    44,    48,    48,
-      48,    48,   102,    47,    36,    36,    36,    36,    44,    44,
-      44,    44,   112,    44,   103,    96,   104,   105,    65,    19,
-      21
+      35,    46,    37,     5,    44,    81,    96,   107,    53,    54,
+      55,    56,   109,     5,    45,    36,    36,    96,    96,     3,
+       4,    96,     6,    36,    36,    35,    42,     5,    41,    42,
+      43,    44,    90,    93,    87,    42,    44,    86,    82,    36,
+      49,    49,    49,    49,    36,    49,    42,   113,   113,    96,
+      96,    65,    90,    38,    91,    76,    92,    38,    37,    48,
+      48,    48,    48,    53,    54,    55,    56,    47,     3,     4,
+      96,     3,     4,    96,    36,    36,    89,   110,    94,    36,
+      94,    46,    86,    44,    44,    44,    44,    49,    49,    49,
+      49,    44,   101,    96,    96,    96,    96,    36,    90,    47,
+      90,    87,    38,    48,    48,    48,    48,   102,    47,    36,
+      36,    36,    36,    44,    44,    44,    44,   112,    44,   103,
+      96,   104,   105,    65,    19,    21
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
@@ -900,11 +887,10 @@ static const yytype_int8 yyr1[] =
       93,    93,    93,    94,    94,    95,    95,    95,    95,    95,
       95,    95,    95,    95,    96,    96,    96,    97,    97,    98,
       98,    98,    98,   100,    99,   102,   101,   104,   103,   105,
-     103,   106,   107,   107,   107,   107,   107,   107,   107,   107,
-     107,   107,   107,   108,   109,   109,   109,   109,   109,   109,
-     109,   109,   110,   110,   110,   110,   110,   111,   111,   112,
-     112,   112,   112,   112,   112,   112,   113,   113,   113,   113,
-     113
+     103,   106,   107,   107,   107,   108,   109,   109,   109,   109,
+     109,   109,   109,   109,   110,   110,   110,   110,   110,   111,
+     111,   112,   112,   112,   112,   112,   112,   112,   113,   113,
+     113,   113,   113
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
@@ -919,11 +905,10 @@ static const yytype_int8 yyr2[] =
        1,     1,     1,     0,     1,     3,     5,     5,     5,     5,
        7,     7,     7,     7,     1,     1,     1,     3,     5,     1,
        1,     3,     3,     0,    10,     0,     4,     0,     3,     0,
-       3,     4,     1,     1,     1,     3,     3,     3,     3,     5,
-       5,     5,     5,     4,     4,     4,     4,     4,     6,     6,
-       6,     6,     1,     1,     1,     1,     1,     1,     1,     1,
+       3,     4,     1,     1,     1,     4,     4,     4,     4,     4,
+       6,     6,     6,     6,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1
+       1,     1,     1
 };
 
 
@@ -1917,199 +1902,204 @@ yyreduce:
     switch (yyn)
       {
   case 2: /* program: package_declaration import_declaration list_func_generic func_main  */
-#line 124 "parser.y"
+#line 127 "parser.y"
                                                                      {
     ast_root = yyvsp[0];  // Atribui a raiz da AST
   }
-#line 1925 "parser.c"
+#line 1910 "parser.c"
     break;
 
   case 5: /* $@1: %empty  */
-#line 135 "parser.y"
+#line 138 "parser.y"
                     { add_string(st, yytext); }
-#line 1931 "parser.c"
+#line 1916 "parser.c"
     break;
 
   case 7: /* $@2: %empty  */
-#line 139 "parser.y"
+#line 142 "parser.y"
             { current_scope++; }
-#line 1937 "parser.c"
+#line 1922 "parser.c"
     break;
 
   case 8: /* func_main: FUNC MAIN $@2 LEFT_PARENTESES RIGHT_PARENTESES block  */
-#line 139 "parser.y"
+#line 142 "parser.y"
                                                                         {
     yyval = new_subtree(MAIN_NODE, VOID_TYPE_, 1, yyvsp[0]);
+  }
+#line 1930 "parser.c"
+    break;
+
+  case 9: /* block: LEFT_BRACE statement_list RIGHT_BRACE  */
+#line 148 "parser.y"
+                                        {
+    yyval = new_subtree(BLOCK_NODE, VOID_TYPE_, 1, yyvsp[-1]);
+  }
+#line 1938 "parser.c"
+    break;
+
+  case 12: /* $@3: %empty  */
+#line 159 "parser.y"
+          { strcpy(copied_func_id, copied_id); current_scope++; current_func_idx = new_func();
   }
 #line 1945 "parser.c"
     break;
 
-  case 9: /* block: LEFT_BRACE statement_list RIGHT_BRACE  */
-#line 145 "parser.y"
-                                        {
-    yyval = new_subtree(BLOCK_NODE, VOID_TYPE_, 1, yyvsp[-1]);
+  case 13: /* $@4: %empty  */
+#line 160 "parser.y"
+                                                             { update_func_return_type(ft, current_func_idx, last_decl_type); current_return_type=last_decl_type;
   }
-#line 1953 "parser.c"
+#line 1952 "parser.c"
     break;
 
-  case 12: /* $@3: %empty  */
-#line 156 "parser.y"
-          { strcpy(copied_func_id, copied_id); current_scope++; current_func_idx = new_func();
+  case 14: /* func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block  */
+#line 161 "parser.y"
+          { 
+    has_return = 0;
   }
 #line 1960 "parser.c"
     break;
 
-  case 13: /* $@4: %empty  */
-#line 157 "parser.y"
-                                                             { update_func_return_type(ft, current_func_idx, last_decl_type); current_return_type=last_decl_type;
-  }
-#line 1967 "parser.c"
-    break;
-
-  case 14: /* func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block  */
-#line 158 "parser.y"
-          { 
-    has_return = 0;
-  }
-#line 1975 "parser.c"
-    break;
-
   case 16: /* $@5: %empty  */
-#line 165 "parser.y"
+#line 168 "parser.y"
                { new_var(); add_param_type(ft, current_func_idx, last_decl_type, yylineno);}
-#line 1981 "parser.c"
+#line 1966 "parser.c"
     break;
 
   case 18: /* return_statement: RETURN assign_expression  */
-#line 169 "parser.y"
+#line 172 "parser.y"
                            { 
     check_return_type(yylineno, current_return_type, get_node_type(yyvsp[0]), 1);
     has_return = 1; // Indicar que um return foi encontrado
   }
-#line 1990 "parser.c"
+#line 1975 "parser.c"
     break;
 
   case 19: /* statement_list: statement  */
-#line 176 "parser.y"
+#line 179 "parser.y"
             {
     yyval = new_subtree(STATEMANT_LIST, VOID_TYPE_, 1, yyvsp[0]); 
   }
-#line 1998 "parser.c"
+#line 1983 "parser.c"
     break;
 
   case 20: /* statement_list: statement_list statement  */
-#line 179 "parser.y"
+#line 182 "parser.y"
                            {
       add_child(yyvsp[-1], yyvsp[0]); 
-      yyval = yyvsp[-1]; 
+      yyval = yyvsp[-1];
   }
-#line 2007 "parser.c"
+#line 1992 "parser.c"
     break;
 
   case 31: /* $@6: %empty  */
-#line 196 "parser.y"
+#line 199 "parser.y"
      { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
+}
+#line 1999 "parser.c"
+    break;
+
+  case 32: /* $@7: %empty  */
+#line 200 "parser.y"
+                                     { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
+}
+#line 2006 "parser.c"
+    break;
+
+  case 33: /* statement: ID $@6 LEFT_PARENTESES argument_list_call $@7 RIGHT_PARENTESES SEMI  */
+#line 201 "parser.y"
+                        {
+  yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
 }
 #line 2014 "parser.c"
     break;
 
-  case 32: /* $@7: %empty  */
-#line 197 "parser.y"
-                                     { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
-}
-#line 2021 "parser.c"
-    break;
-
-  case 33: /* statement: ID $@6 LEFT_PARENTESES argument_list_call $@7 RIGHT_PARENTESES SEMI  */
-#line 198 "parser.y"
-                        { 
-  yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
-}
-#line 2029 "parser.c"
-    break;
-
   case 34: /* string_list: STRING_VAL  */
-#line 204 "parser.y"
+#line 207 "parser.y"
              {
     int str_index = add_string(st, yytext);
     yyval = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);  // Cria um nó da AST para a string
   }
-#line 2038 "parser.c"
+#line 2023 "parser.c"
     break;
 
   case 35: /* string_list: string_list COMMA STRING_VAL  */
-#line 208 "parser.y"
+#line 211 "parser.y"
                               {
     int str_index = add_string(st, yytext);
     AST *str_node = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);  // Cria um nó para a nova string
     add_child(yyvsp[-2], str_node);  // Adiciona a nova string como filha da lista existente
     yyval = yyvsp[-2];  // A lista é retornada
 }
-#line 2049 "parser.c"
+#line 2034 "parser.c"
     break;
 
   case 36: /* val_declaration: VAR ID type_spec  */
-#line 217 "parser.y"
+#line 220 "parser.y"
                    { new_var();
   yyval = new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), last_decl_type);
   }
-#line 2057 "parser.c"
+#line 2042 "parser.c"
     break;
 
   case 37: /* $@8: %empty  */
-#line 223 "parser.y"
+#line 226 "parser.y"
       { 
         check_var(); 
-        id_type = get_type_from_var(yylineno, copied_id, current_scope);
-        idx = lookup_var(vt, copied_id, current_scope);
-        check_isArray(idx, yylineno, copied_id);
+        id_type2 = get_type_from_var(yylineno, copied_id, current_scope);
+        idx2 = lookup_var(vt, copied_id, current_scope);
+        check_isArray(idx2, yylineno, copied_id);
       }
-#line 2068 "parser.c"
+#line 2053 "parser.c"
     break;
 
   case 38: /* assign_val: ID $@8 ASSIGN assign_expression  */
-#line 228 "parser.y"
+#line 231 "parser.y"
                                  {
-        check_assignment_type(yylineno, id_type, get_node_type(yyvsp[0]));
-        idx = lookup_var(vt, copied_id, current_scope);
-        yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, new_node(VAR_USE_NODE, idx, id_type), yyvsp[0]);
+        check_assignment_type(yylineno, id_type2, get_node_type(yyvsp[0]));
+        yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, new_node(VAR_USE_NODE, idx2, id_type2), yyvsp[0]);
       }
-#line 2078 "parser.c"
+#line 2062 "parser.c"
     break;
 
-  case 39: /* @9: %empty  */
-#line 236 "parser.y"
+  case 39: /* $@9: %empty  */
+#line 239 "parser.y"
      { 
       check_var(); 
-      int var_idx = lookup_var(vt, copied_id, current_scope); 
-      yyval = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
+      strcpy(copied_id_array, copied_id);
+      //$$ = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
   }
-#line 2088 "parser.c"
+#line 2072 "parser.c"
     break;
 
-  case 40: /* array_printable: ID @9 LEFT_BRACKET id_int_compression RIGHT_BRACKET  */
-#line 241 "parser.y"
+  case 40: /* array_printable: ID $@9 LEFT_BRACKET id_int_compression RIGHT_BRACKET  */
+#line 244 "parser.y"
                                                 {
     check_array_position_int(yylineno, get_node_type(yyvsp[-1]));
-    yyval = new_subtree(ARRAY_ACCESS_NODE, get_type_from_var(yylineno, copied_id, current_scope), 2, yyval, yyvsp[-1]);
+    yyval = new_subtree(ARRAY_ACCESS_NODE, get_type_from_var(yylineno, copied_id_array, current_scope), 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id_array, current_scope), get_type_from_var(yylineno, copied_id_array, current_scope)), yyvsp[-1]);
   }
-#line 2097 "parser.c"
+#line 2081 "parser.c"
     break;
 
   case 41: /* array_declaration: VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec  */
-#line 248 "parser.y"
+#line 251 "parser.y"
                                                       { 
-      new_var(); 
+      new_var();
+      printf("Debug1 \\n");
       idx = lookup_var(vt, copied_id, current_scope); 
+      printf("Debug2 \\n");
       set_isArray_by_idx(vt, idx, 1);
+      printf("Debug3 \\n");
       check_array_position_int(yylineno, INT_TYPE_); // O índice é do tipo INT
-      yyval = new_node(ARRAY_DECL_NODE, idx, last_decl_type);
+      printf("Debug4 \\n");
+      //$$ = new_node(ARRAY_DECL_NODE, idx, last_decl_type);
+      yyval = new_subtree(ARRAY_DECL_NODE, get_type_from_var(yylineno, copied_id, current_scope), 2, new_node(VAR_DECL_NODE, idx, last_decl_type), new_node_int(INT_VAL_NODE, get_data(yyvsp[-2]), INT_TYPE_));
+      printf("Debug5 \\n");
   }
-#line 2109 "parser.c"
+#line 2099 "parser.c"
     break;
 
   case 42: /* @10: %empty  */
-#line 258 "parser.y"
+#line 267 "parser.y"
      { 
       check_var(); 
       array_type = get_type_from_var(yylineno, copied_id, current_scope);
@@ -2117,57 +2107,57 @@ yyreduce:
       check_isNotArray(idx, yylineno);
       yyval = new_node(VAR_USE_NODE, idx, array_type);
   }
-#line 2121 "parser.c"
+#line 2111 "parser.c"
     break;
 
   case 43: /* array_assign: ID @10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression  */
-#line 265 "parser.y"
+#line 274 "parser.y"
                                                                          {
     check_array_position_int(yylineno, get_node_type(yyvsp[-3]));
     check_array_type(array_type, get_node_type(yyvsp[0]), yylineno);
     yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 3, yyval, yyvsp[-3], yyvsp[0]); // Cria subárvore para atribuição
   }
-#line 2131 "parser.c"
+#line 2121 "parser.c"
     break;
 
   case 44: /* id_int_compression: ID  */
-#line 273 "parser.y"
+#line 282 "parser.y"
      { 
       check_var(); 
       int var_idx = lookup_var(vt, copied_id, current_scope); 
       yyval = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
   }
-#line 2141 "parser.c"
+#line 2131 "parser.c"
     break;
 
   case 45: /* id_int_compression: INT_VAL  */
-#line 278 "parser.y"
+#line 287 "parser.y"
           { 
       yyval = yyvsp[0]; 
   }
-#line 2149 "parser.c"
+#line 2139 "parser.c"
     break;
 
   case 46: /* assign_expression: string_list  */
-#line 284 "parser.y"
+#line 293 "parser.y"
               { yyval = yyvsp[0]; }
-#line 2155 "parser.c"
+#line 2145 "parser.c"
     break;
 
   case 47: /* assign_expression: id_number_compression  */
-#line 285 "parser.y"
+#line 294 "parser.y"
                         { yyval = yyvsp[0]; }
-#line 2161 "parser.c"
+#line 2151 "parser.c"
     break;
 
   case 48: /* assign_expression: operator_expression  */
-#line 286 "parser.y"
+#line 295 "parser.y"
                       { yyval = yyvsp[0]; }
-#line 2167 "parser.c"
+#line 2157 "parser.c"
     break;
 
   case 49: /* assign_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 287 "parser.y"
+#line 296 "parser.y"
                                                        {
     if (get_node_type(yyvsp[-1]) == FLOAT_TYPE_) {
         yyval = new_subtree(F2I_NODE, INT_TYPE_, 1, yyvsp[-1]);
@@ -2177,11 +2167,11 @@ yyreduce:
         exit(EXIT_FAILURE);
     }
 }
-#line 2181 "parser.c"
+#line 2171 "parser.c"
     break;
 
   case 50: /* assign_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 296 "parser.y"
+#line 305 "parser.y"
                                                          {
     if (get_node_type(yyvsp[-1]) == INT_TYPE_) {
         yyval = new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-1]);
@@ -2191,87 +2181,87 @@ yyreduce:
         exit(EXIT_FAILURE);
     }
 }
-#line 2195 "parser.c"
+#line 2185 "parser.c"
     break;
 
   case 51: /* $@11: %empty  */
-#line 305 "parser.y"
+#line 314 "parser.y"
      {
     strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
   }
-#line 2203 "parser.c"
+#line 2193 "parser.c"
     break;
 
   case 52: /* $@12: %empty  */
-#line 307 "parser.y"
+#line 316 "parser.y"
                                        { 
       check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
     }
-#line 2211 "parser.c"
+#line 2201 "parser.c"
     break;
 
   case 53: /* assign_expression: ID $@11 LEFT_PARENTESES argument_list_call $@12 RIGHT_PARENTESES  */
-#line 309 "parser.y"
+#line 318 "parser.y"
                        { 
         yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
       }
-#line 2219 "parser.c"
+#line 2209 "parser.c"
     break;
 
   case 55: /* $@13: %empty  */
-#line 316 "parser.y"
+#line 325 "parser.y"
      { 
     check_var(); 
     arg_types[argument_count] = get_type_from_var(yylineno, copied_id, current_scope); 
     argument_count++; 
 }
-#line 2229 "parser.c"
+#line 2219 "parser.c"
     break;
 
   case 57: /* $@14: %empty  */
-#line 321 "parser.y"
+#line 330 "parser.y"
                { 
     arg_types[argument_count] = get_node_type(yyvsp[0]); 
     argument_count++; 
 }
-#line 2238 "parser.c"
+#line 2228 "parser.c"
     break;
 
   case 59: /* argument_val: STRING_VAL  */
-#line 328 "parser.y"
+#line 337 "parser.y"
              { 
       int str_index = add_string(st, yytext);
       yyval = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);
   }
-#line 2247 "parser.c"
+#line 2237 "parser.c"
     break;
 
   case 60: /* argument_val: BOOL_VAL  */
-#line 332 "parser.y"
+#line 341 "parser.y"
            { 
       yyval = yyvsp[0];
   }
-#line 2255 "parser.c"
+#line 2245 "parser.c"
     break;
 
   case 61: /* argument_val: INT_VAL  */
-#line 335 "parser.y"
+#line 344 "parser.y"
           { 
       yyval = yyvsp[0];
   }
-#line 2263 "parser.c"
+#line 2253 "parser.c"
     break;
 
   case 62: /* argument_val: FLOAT_VAL  */
-#line 338 "parser.y"
+#line 347 "parser.y"
             { 
       yyval = yyvsp[0];
   }
-#line 2271 "parser.c"
+#line 2261 "parser.c"
     break;
 
   case 65: /* operator_expression: id_number_compression operators id_number_compression  */
-#line 349 "parser.y"
+#line 358 "parser.y"
                                                         {
     if (get_node_type(yyvsp[-2]) == get_node_type(yyvsp[0])) {
       yyval = new_subtree(get_kind(yyvsp[-1]), get_node_type(yyvsp[-2]), 2, yyvsp[-2], yyvsp[0]);
@@ -2280,11 +2270,11 @@ yyreduce:
       exit(EXIT_FAILURE);
     }
 }
-#line 2284 "parser.c"
+#line 2274 "parser.c"
     break;
 
   case 66: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression  */
-#line 357 "parser.y"
+#line 366 "parser.y"
                                                                                        {
     if (get_node_type(yyvsp[-3]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'int'.\n", yylineno, get_text(get_node_type(yyvsp[-3])));
@@ -2295,14 +2285,15 @@ yyreduce:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'float32' to 'int'\n", yylineno);
-      yyval = new_subtree(F2I_NODE, INT_TYPE_, 2, yyvsp[-3], yyvsp[0]);
+      //new_node(F2I_NODE, INT_TYPE_, 1, $2)
+      yyval = new_subtree(get_kind(yyvsp[-1]), INT_TYPE_, 2, new_subtree(F2I_NODE, INT_TYPE_, 1, yyvsp[-3]), yyvsp[0]);
     }
 }
-#line 2302 "parser.c"
+#line 2293 "parser.c"
     break;
 
   case 67: /* operator_expression: id_number_compression operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 370 "parser.y"
+#line 380 "parser.y"
                                                                                        {
     if (get_node_type(yyvsp[-1]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'int'.\n", yylineno, get_text(get_node_type(yyvsp[-1])));
@@ -2313,14 +2304,15 @@ yyreduce:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'float32' to 'int'\n", yylineno);
-      yyval = new_subtree(F2I_NODE, INT_TYPE_, 2, yyvsp[-4], yyvsp[-1]);
+      //$$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $1, $4);
+      yyval = new_subtree(get_kind(yyvsp[-3]), INT_TYPE_, 2, yyvsp[-4], new_subtree(F2I_NODE, INT_TYPE_, 1, yyvsp[-1]));
     }
 }
-#line 2320 "parser.c"
+#line 2312 "parser.c"
     break;
 
   case 68: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression  */
-#line 383 "parser.y"
+#line 394 "parser.y"
                                                                                          {
     if (get_node_type(yyvsp[-3]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'float32'.\n", yylineno, get_text(get_node_type(yyvsp[-3])));
@@ -2331,14 +2323,15 @@ yyreduce:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'int' to 'float32'\n", yylineno);
-      yyval = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, yyvsp[-3], yyvsp[0]);
+      //$$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $2, $5);
+      yyval = new_subtree(get_kind(yyvsp[-1]), FLOAT_TYPE_, 2, new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-3]), yyvsp[0]);
     }
 }
-#line 2338 "parser.c"
+#line 2331 "parser.c"
     break;
 
   case 69: /* operator_expression: id_number_compression operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 396 "parser.y"
+#line 408 "parser.y"
                                                                                          {
     if (get_node_type(yyvsp[-1]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'float32'.\n", yylineno, get_text(get_node_type(yyvsp[-1])));
@@ -2349,14 +2342,15 @@ yyreduce:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'int' to 'float32'\n", yylineno);
-      yyval = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, yyvsp[-4], yyvsp[-1]);
+      //$$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $1, $4);
+      yyval = new_subtree(get_kind(yyvsp[-3]), FLOAT_TYPE_, 2, yyvsp[-4], new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-1]));
     }
 }
-#line 2356 "parser.c"
+#line 2350 "parser.c"
     break;
 
   case 70: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 409 "parser.y"
+#line 422 "parser.y"
                                                                                                                         {
     if (get_node_type(yyvsp[-5]) != FLOAT_TYPE_ || get_node_type(yyvsp[-1]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2365,11 +2359,11 @@ yyreduce:
     printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(get_node_type(yyvsp[-5])), get_text(get_node_type(yyvsp[-1])));
     exit(EXIT_FAILURE);
 }
-#line 2369 "parser.c"
+#line 2363 "parser.c"
     break;
 
   case 71: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 417 "parser.y"
+#line 430 "parser.y"
                                                                                                                         {
     if (get_node_type(yyvsp[-5]) != INT_TYPE_ || get_node_type(yyvsp[-1]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2378,352 +2372,291 @@ yyreduce:
     printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(get_node_type(yyvsp[-5])), get_text(get_node_type(yyvsp[-1])));
     exit(EXIT_FAILURE);
 }
-#line 2382 "parser.c"
+#line 2376 "parser.c"
     break;
 
   case 72: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 425 "parser.y"
+#line 438 "parser.y"
                                                                                                                       {
     if (get_node_type(yyvsp[-5]) != FLOAT_TYPE_ || get_node_type(yyvsp[-1]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
         exit(EXIT_FAILURE);
     }
-    yyval = new_subtree(F2I_NODE, INT_TYPE_, 2, yyvsp[-5], yyvsp[-1]);
+    //$$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $2, $6);
+    yyval = new_subtree(get_kind(yyvsp[-3]), INT_TYPE_, 2, new_subtree(I2F_NODE, INT_TYPE_, 1, yyvsp[-5]), new_subtree(I2F_NODE, INT_TYPE_, 1, yyvsp[-1]));
 }
-#line 2394 "parser.c"
+#line 2389 "parser.c"
     break;
 
   case 73: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 432 "parser.y"
+#line 446 "parser.y"
                                                                                                                           {
     if (get_node_type(yyvsp[-5]) != INT_TYPE_ || get_node_type(yyvsp[-1]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
         exit(EXIT_FAILURE);
     }
-    yyval = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, yyvsp[-5], yyvsp[-1]);
+    //$$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $2, $6);
+    yyval = new_subtree(get_kind(yyvsp[-3]), FLOAT_TYPE_, 2, new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-5]), new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-1]));
 }
-#line 2406 "parser.c"
+#line 2402 "parser.c"
     break;
 
   case 74: /* id_number_compression: ID  */
-#line 442 "parser.y"
+#line 457 "parser.y"
       { check_var(); 
         idx = lookup_var(vt, copied_id, current_scope);
         check_isArray(idx, yylineno, copied_id);
         yyval = new_node(VAR_USE_NODE, idx, get_type_from_var(yylineno, copied_id, current_scope));
       }
-#line 2416 "parser.c"
+#line 2412 "parser.c"
     break;
 
   case 75: /* id_number_compression: number_val_spec  */
-#line 447 "parser.y"
+#line 462 "parser.y"
                   { yyval = yyvsp[0]; }
-#line 2422 "parser.c"
+#line 2418 "parser.c"
     break;
 
   case 76: /* id_number_compression: BOOL_VAL  */
-#line 448 "parser.y"
+#line 463 "parser.y"
            { yyval = yyvsp[0]; }
-#line 2428 "parser.c"
+#line 2424 "parser.c"
     break;
 
   case 77: /* if_statement: IF if_expression block  */
-#line 452 "parser.y"
+#line 467 "parser.y"
                                    { 
       yyval = new_subtree(IF_NODE, VOID_TYPE_, 2, yyvsp[-1], yyvsp[0]);
   }
-#line 2436 "parser.c"
+#line 2432 "parser.c"
     break;
 
   case 78: /* if_statement: IF if_expression block ELSE block  */
-#line 455 "parser.y"
+#line 470 "parser.y"
                                     { 
       yyval = new_subtree(IF_NODE, VOID_TYPE_, 3, yyvsp[-3], yyvsp[-2], yyvsp[0]);
   }
-#line 2444 "parser.c"
+#line 2440 "parser.c"
     break;
 
   case 79: /* if_expression: ID  */
-#line 461 "parser.y"
+#line 476 "parser.y"
      { 
       check_var(); 
       Type expr_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_conditional_type(yylineno, expr_type, "if"); 
       yyval = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), expr_type); 
   }
-#line 2455 "parser.c"
+#line 2451 "parser.c"
     break;
 
   case 80: /* if_expression: BOOL_VAL  */
-#line 467 "parser.y"
+#line 482 "parser.y"
            { 
       check_conditional_type(yylineno, BOOL_TYPE_, "if"); 
       yyval = yyvsp[0]; // Como o BOOL_VAL já é um nó, simplesmente atribuímos $1 a $$.
   }
-#line 2464 "parser.c"
+#line 2460 "parser.c"
     break;
 
   case 81: /* if_expression: id_number_compression comparadors id_number_compression  */
-#line 471 "parser.y"
+#line 486 "parser.y"
                                                           { 
-      yyval = new_subtree(COMPARE_NODE, BOOL_TYPE_, 3, yyvsp[-2], yyvsp[-1], yyvsp[0]); 
+      yyval = new_subtree(get_kind(yyvsp[-1]), VOID_TYPE_, 2, yyvsp[-2], yyvsp[0]); 
   }
-#line 2472 "parser.c"
+#line 2468 "parser.c"
     break;
 
   case 82: /* if_expression: operator_expression comparadors id_number_compression  */
-#line 474 "parser.y"
+#line 489 "parser.y"
                                                         { 
-      yyval = new_subtree(COMPARE_NODE, BOOL_TYPE_, 3, yyvsp[-2], yyvsp[-1], yyvsp[0]); 
+      yyval = new_subtree(get_kind(yyvsp[-1]), VOID_TYPE_, 2, yyvsp[-2], yyvsp[0]);
   }
-#line 2480 "parser.c"
+#line 2476 "parser.c"
     break;
 
-  case 83: /* @15: %empty  */
-#line 480 "parser.y"
+  case 83: /* $@15: %empty  */
+#line 496 "parser.y"
          { 
       last_decl_type = INT_TYPE_; 
       new_var(); 
-      yyval = new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), INT_TYPE_); 
   }
-#line 2490 "parser.c"
+#line 2485 "parser.c"
     break;
 
-  case 84: /* for_statement: FOR ID @15 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block  */
-#line 484 "parser.y"
+  case 84: /* for_statement: FOR ID $@15 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block  */
+#line 499 "parser.y"
                                                                    {
-      AST *assign_node = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, yyvsp[-9], yyvsp[-4]);
-      yyval = new_subtree(FOR_NODE, VOID_TYPE_, 4, yyvsp[-9], assign_node, yyvsp[-1], yyvsp[0]);
+      // $2: ID (variável), $4: SHORT_ASSIGN, $5: INT_VAL, $6: SEMI, $7: for_comparison, $8: SEMI, $9: for_update, $10: block
+
+      // Inicialização: ID := INT_VAL
+      AST *init_node = new_subtree(SHORT_ASSIGN_NODE, VOID_TYPE_, 2, 
+                                   new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), INT_TYPE_), 
+                                   new_node_int(INT_VAL_NODE, get_data(yyvsp[-5]), INT_TYPE_));
+
+      // Condição de continuação do loop (e.g., i < 5)
+      AST *cond_node = yyvsp[-3]; 
+
+      // Atualização (e.g., i++)
+      AST *update_node = yyvsp[-1]; 
+
+      // Bloco do loop
+      AST *body_node = yyvsp[0];
+
+      // Nó principal do loop for
+      yyval = new_subtree(FOR_NODE, VOID_TYPE_, 4, init_node, cond_node, update_node, body_node);
   }
-#line 2499 "parser.c"
+#line 2510 "parser.c"
     break;
 
-  case 85: /* @16: %empty  */
-#line 491 "parser.y"
+  case 85: /* $@16: %empty  */
+#line 523 "parser.y"
      { 
-      check_var(); 
-      yyval = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)); 
+      check_var();
   }
-#line 2508 "parser.c"
+#line 2518 "parser.c"
     break;
 
-  case 86: /* for_comparison: ID @16 comparadors id_number_compression  */
-#line 494 "parser.y"
+  case 86: /* for_comparison: ID $@16 comparadors id_number_compression  */
+#line 525 "parser.y"
                                       {
-      yyval = new_subtree(COMPARE_NODE, BOOL_TYPE_, 2, yyvsp[-3], yyvsp[-1]); 
+      // Cria o nó de comparação entre a variável e a expressão
+      yyval = new_subtree(get_kind(yyvsp[-1]), VOID_TYPE_, 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), yyvsp[0]);
   }
-#line 2516 "parser.c"
+#line 2527 "parser.c"
     break;
 
-  case 87: /* @17: %empty  */
-#line 500 "parser.y"
+  case 87: /* $@17: %empty  */
+#line 532 "parser.y"
      { 
       check_var(); 
-      yyval = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)); 
   }
-#line 2525 "parser.c"
+#line 2535 "parser.c"
     break;
 
-  case 88: /* for_update: ID @17 PLUS_PLUS  */
-#line 503 "parser.y"
+  case 88: /* for_update: ID $@17 PLUS_PLUS  */
+#line 534 "parser.y"
               {
-      yyval = new_subtree(PLUS_NODE, INT_TYPE_, 2, yyvsp[-2], new_node(INT_VAL_NODE, 1, INT_TYPE_));
+      // Cria um nó para a operação de incremento (i + 1)
+      AST *increment_node = new_subtree(PLUS_NODE, INT_TYPE_, 2, 
+                              new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+                              new_node_int(INT_VAL_NODE, 1, INT_TYPE_));
+                              
+      // Cria um nó para a atribuição (i = i + 1)
+      yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, 
+            new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+            increment_node);
   }
-#line 2533 "parser.c"
+#line 2551 "parser.c"
     break;
 
-  case 89: /* @18: %empty  */
-#line 506 "parser.y"
+  case 89: /* $@18: %empty  */
+#line 545 "parser.y"
      { 
       check_var(); 
-      yyval = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)); 
   }
-#line 2542 "parser.c"
+#line 2559 "parser.c"
     break;
 
-  case 90: /* for_update: ID @18 MINUS_MINUS  */
-#line 509 "parser.y"
+  case 90: /* for_update: ID $@18 MINUS_MINUS  */
+#line 547 "parser.y"
                 {
-      yyval = new_subtree(MINUS_NODE, INT_TYPE_, 2, yyvsp[-2], new_node(INT_VAL_NODE, 1, INT_TYPE_));
+      // Cria um nó para a operação de incremento (i + 1)
+      AST *increment_node = new_subtree(MINUS_NODE, INT_TYPE_, 2, 
+                              new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+                              new_node_int(INT_VAL_NODE, 1, INT_TYPE_));
+                              
+      // Cria um nó para a atribuição (i = i + 1)
+      yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, 
+            new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+            increment_node);
   }
-#line 2550 "parser.c"
+#line 2575 "parser.c"
     break;
 
   case 91: /* print_operation: PRINTLN LEFT_PARENTESES print_args RIGHT_PARENTESES  */
-#line 515 "parser.y"
+#line 561 "parser.y"
                                                         {
         yyval = new_subtree(WRITE_NODE, VOID_TYPE_, 1, yyvsp[-1]);  // Cria um nó WRITE_NODE na AST
     }
-#line 2558 "parser.c"
+#line 2583 "parser.c"
     break;
 
   case 92: /* print_args: STRING_VAL  */
-#line 521 "parser.y"
+#line 567 "parser.y"
              {
       int str_index = add_string(st, yytext);
       yyval = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);
   }
-#line 2567 "parser.c"
+#line 2592 "parser.c"
     break;
 
   case 93: /* print_args: id_number_compression  */
-#line 525 "parser.y"
+#line 571 "parser.y"
                         { yyval = yyvsp[0]; }
-#line 2573 "parser.c"
+#line 2598 "parser.c"
     break;
 
   case 94: /* print_args: array_printable  */
-#line 526 "parser.y"
+#line 572 "parser.y"
                   { yyval = yyvsp[0]; }
-#line 2579 "parser.c"
+#line 2604 "parser.c"
     break;
 
-  case 95: /* print_args: FORMAT_STRING COMMA ID  */
-#line 527 "parser.y"
-                         { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); 
-      yyval = new_subtree(WRITE_NODE, STRING_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
-  }
-#line 2590 "parser.c"
-    break;
-
-  case 96: /* print_args: FORMAT_INT COMMA ID  */
-#line 533 "parser.y"
-                      { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, INT_TYPE_, "%d"); 
-      yyval = new_subtree(WRITE_NODE, INT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
-  }
-#line 2601 "parser.c"
-    break;
-
-  case 97: /* print_args: FORMAT_FLOAT COMMA ID  */
-#line 539 "parser.y"
-                        { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); 
-      yyval = new_subtree(WRITE_NODE, FLOAT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
-  }
+  case 95: /* scanf_operation: SCANF LEFT_PARENTESES scan_args RIGHT_PARENTESES  */
+#line 628 "parser.y"
+                                                     {
+        yyval = yyvsp[-1];
+    }
 #line 2612 "parser.c"
     break;
 
-  case 98: /* print_args: FORMAT_BOOL COMMA ID  */
-#line 545 "parser.y"
-                       { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); 
-      yyval = new_subtree(WRITE_NODE, BOOL_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
-  }
-#line 2623 "parser.c"
-    break;
-
-  case 99: /* print_args: print_args COMMA FORMAT_STRING COMMA ID  */
-#line 551 "parser.y"
-                                          { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); 
-      add_child(yyvsp[-4], new_subtree(WRITE_NODE, STRING_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
-      yyval = yyvsp[-4];
-  }
-#line 2635 "parser.c"
-    break;
-
-  case 100: /* print_args: print_args COMMA FORMAT_INT COMMA ID  */
-#line 558 "parser.y"
-                                       { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, INT_TYPE_, "%d"); 
-      add_child(yyvsp[-4], new_subtree(WRITE_NODE, INT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
-      yyval = yyvsp[-4];
-  }
-#line 2647 "parser.c"
-    break;
-
-  case 101: /* print_args: print_args COMMA FORMAT_FLOAT COMMA ID  */
-#line 565 "parser.y"
-                                         { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); 
-      add_child(yyvsp[-4], new_subtree(WRITE_NODE, FLOAT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
-      yyval = yyvsp[-4];
-  }
-#line 2659 "parser.c"
-    break;
-
-  case 102: /* print_args: print_args COMMA FORMAT_BOOL COMMA ID  */
-#line 572 "parser.y"
-                                        { 
-      check_var(); 
-      Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
-      check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); 
-      add_child(yyvsp[-4], new_subtree(WRITE_NODE, BOOL_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
-      yyval = yyvsp[-4];
-  }
-#line 2671 "parser.c"
-    break;
-
-  case 103: /* scanf_operation: SCANF LEFT_PARENTESES scan_args RIGHT_PARENTESES  */
-#line 582 "parser.y"
-                                                     {
-        yyval = new_subtree(READ_NODE, VOID_TYPE_, 1, yyvsp[-1]);
-    }
-#line 2679 "parser.c"
-    break;
-
-  case 104: /* scan_args: FORMAT_STRING COMMA ADDRESS ID  */
-#line 588 "parser.y"
+  case 96: /* scan_args: FORMAT_STRING COMMA ADDRESS ID  */
+#line 634 "parser.y"
                                  { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); 
       yyval = new_subtree(READ_NODE, STRING_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2690 "parser.c"
+#line 2623 "parser.c"
     break;
 
-  case 105: /* scan_args: FORMAT_INT COMMA ADDRESS ID  */
-#line 594 "parser.y"
+  case 97: /* scan_args: FORMAT_INT COMMA ADDRESS ID  */
+#line 640 "parser.y"
                               { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, INT_TYPE_, "%d"); 
       yyval = new_subtree(READ_NODE, INT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2701 "parser.c"
+#line 2634 "parser.c"
     break;
 
-  case 106: /* scan_args: FORMAT_FLOAT COMMA ADDRESS ID  */
-#line 600 "parser.y"
+  case 98: /* scan_args: FORMAT_FLOAT COMMA ADDRESS ID  */
+#line 646 "parser.y"
                                 { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); 
       yyval = new_subtree(READ_NODE, FLOAT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2712 "parser.c"
+#line 2645 "parser.c"
     break;
 
-  case 107: /* scan_args: FORMAT_BOOL COMMA ADDRESS ID  */
-#line 606 "parser.y"
+  case 99: /* scan_args: FORMAT_BOOL COMMA ADDRESS ID  */
+#line 652 "parser.y"
                                { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); 
       yyval = new_subtree(READ_NODE, BOOL_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2723 "parser.c"
+#line 2656 "parser.c"
     break;
 
-  case 108: /* scan_args: scan_args COMMA FORMAT_STRING COMMA ADDRESS ID  */
-#line 612 "parser.y"
+  case 100: /* scan_args: scan_args COMMA FORMAT_STRING COMMA ADDRESS ID  */
+#line 658 "parser.y"
                                                  { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2731,11 +2664,11 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, STRING_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2735 "parser.c"
+#line 2668 "parser.c"
     break;
 
-  case 109: /* scan_args: scan_args COMMA FORMAT_INT COMMA ADDRESS ID  */
-#line 619 "parser.y"
+  case 101: /* scan_args: scan_args COMMA FORMAT_INT COMMA ADDRESS ID  */
+#line 665 "parser.y"
                                               { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2743,11 +2676,11 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, INT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2747 "parser.c"
+#line 2680 "parser.c"
     break;
 
-  case 110: /* scan_args: scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID  */
-#line 626 "parser.y"
+  case 102: /* scan_args: scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID  */
+#line 672 "parser.y"
                                                 { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2755,11 +2688,11 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, FLOAT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2759 "parser.c"
+#line 2692 "parser.c"
     break;
 
-  case 111: /* scan_args: scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID  */
-#line 633 "parser.y"
+  case 103: /* scan_args: scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID  */
+#line 679 "parser.y"
                                                { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2767,125 +2700,125 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, BOOL_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2771 "parser.c"
+#line 2704 "parser.c"
     break;
 
-  case 112: /* type_spec: INT_TYPE  */
-#line 643 "parser.y"
+  case 104: /* type_spec: INT_TYPE  */
+#line 689 "parser.y"
               { last_decl_type = INT_TYPE_; }
-#line 2777 "parser.c"
+#line 2710 "parser.c"
     break;
 
-  case 113: /* type_spec: STRING_TYPE  */
-#line 644 "parser.y"
+  case 105: /* type_spec: STRING_TYPE  */
+#line 690 "parser.y"
               { last_decl_type = STRING_TYPE_; }
-#line 2783 "parser.c"
+#line 2716 "parser.c"
     break;
 
-  case 114: /* type_spec: FLOAT_TYPE  */
-#line 645 "parser.y"
+  case 106: /* type_spec: FLOAT_TYPE  */
+#line 691 "parser.y"
               { last_decl_type = FLOAT_TYPE_; }
-#line 2789 "parser.c"
+#line 2722 "parser.c"
     break;
 
-  case 115: /* type_spec: BOOL_TYPE  */
-#line 646 "parser.y"
+  case 107: /* type_spec: BOOL_TYPE  */
+#line 692 "parser.y"
               { last_decl_type = BOOL_TYPE_; }
-#line 2795 "parser.c"
+#line 2728 "parser.c"
     break;
 
-  case 116: /* type_spec: VOID_TYPE  */
-#line 647 "parser.y"
+  case 108: /* type_spec: VOID_TYPE  */
+#line 693 "parser.y"
               { last_decl_type = VOID_TYPE_; }
-#line 2801 "parser.c"
+#line 2734 "parser.c"
     break;
 
-  case 117: /* number_val_spec: INT_VAL  */
-#line 651 "parser.y"
+  case 109: /* number_val_spec: INT_VAL  */
+#line 697 "parser.y"
           { yyval = yyvsp[0]; }
-#line 2807 "parser.c"
+#line 2740 "parser.c"
     break;
 
-  case 118: /* number_val_spec: FLOAT_VAL  */
-#line 652 "parser.y"
+  case 110: /* number_val_spec: FLOAT_VAL  */
+#line 698 "parser.y"
             { yyval = yyvsp[0]; }
-#line 2813 "parser.c"
+#line 2746 "parser.c"
     break;
 
-  case 119: /* comparadors: LESS  */
-#line 656 "parser.y"
+  case 111: /* comparadors: LESS  */
+#line 702 "parser.y"
        { yyval = new_node(LESS_NODE, 0, VOID_TYPE_); }
-#line 2819 "parser.c"
+#line 2752 "parser.c"
     break;
 
-  case 120: /* comparadors: MORE  */
-#line 657 "parser.y"
+  case 112: /* comparadors: MORE  */
+#line 703 "parser.y"
        { yyval = new_node(MORE_NODE, 0, VOID_TYPE_); }
-#line 2825 "parser.c"
+#line 2758 "parser.c"
     break;
 
-  case 121: /* comparadors: LESS_EQUAL  */
-#line 658 "parser.y"
+  case 113: /* comparadors: LESS_EQUAL  */
+#line 704 "parser.y"
              { yyval = new_node(LESS_EQUAL_NODE, 0, VOID_TYPE_); }
-#line 2831 "parser.c"
+#line 2764 "parser.c"
     break;
 
-  case 122: /* comparadors: MORE_EQUAL  */
-#line 659 "parser.y"
+  case 114: /* comparadors: MORE_EQUAL  */
+#line 705 "parser.y"
              { yyval = new_node(MORE_EQUAL_NODE, 0, VOID_TYPE_); }
-#line 2837 "parser.c"
+#line 2770 "parser.c"
     break;
 
-  case 123: /* comparadors: DIFERS  */
-#line 660 "parser.y"
+  case 115: /* comparadors: DIFERS  */
+#line 706 "parser.y"
          { yyval = new_node(DIFERS_NODE, 0, VOID_TYPE_); }
-#line 2843 "parser.c"
+#line 2776 "parser.c"
     break;
 
-  case 124: /* comparadors: NOT  */
-#line 661 "parser.y"
+  case 116: /* comparadors: NOT  */
+#line 707 "parser.y"
       { yyval = new_node(NOT_NODE, 0, VOID_TYPE_); }
-#line 2849 "parser.c"
+#line 2782 "parser.c"
     break;
 
-  case 125: /* comparadors: EQUALS  */
-#line 662 "parser.y"
+  case 117: /* comparadors: EQUALS  */
+#line 708 "parser.y"
          { yyval = new_node(EQUALS_NODE, 0, VOID_TYPE_); }
-#line 2855 "parser.c"
+#line 2788 "parser.c"
     break;
 
-  case 126: /* operators: PLUS  */
-#line 666 "parser.y"
+  case 118: /* operators: PLUS  */
+#line 712 "parser.y"
        { yyval = new_node(PLUS_NODE, 0, VOID_TYPE_); }
-#line 2861 "parser.c"
+#line 2794 "parser.c"
     break;
 
-  case 127: /* operators: MINUS  */
-#line 667 "parser.y"
+  case 119: /* operators: MINUS  */
+#line 713 "parser.y"
         { yyval = new_node(MINUS_NODE, 0, VOID_TYPE_); }
-#line 2867 "parser.c"
+#line 2800 "parser.c"
     break;
 
-  case 128: /* operators: TIMES  */
-#line 668 "parser.y"
+  case 120: /* operators: TIMES  */
+#line 714 "parser.y"
         { yyval = new_node(TIMES_NODE, 0, VOID_TYPE_); }
-#line 2873 "parser.c"
+#line 2806 "parser.c"
     break;
 
-  case 129: /* operators: OVER  */
-#line 669 "parser.y"
+  case 121: /* operators: OVER  */
+#line 715 "parser.y"
        { yyval = new_node(OVER_NODE, 0, VOID_TYPE_); }
-#line 2879 "parser.c"
+#line 2812 "parser.c"
     break;
 
-  case 130: /* operators: REST  */
-#line 670 "parser.y"
+  case 122: /* operators: REST  */
+#line 716 "parser.y"
        { yyval = new_node(REST_NODE, 0, VOID_TYPE_); }
-#line 2885 "parser.c"
+#line 2818 "parser.c"
     break;
 
 
-#line 2889 "parser.c"
+#line 2822 "parser.c"
 
         default: break;
       }
@@ -3120,7 +3053,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 673 "parser.y"
+#line 719 "parser.y"
 
 
 void check_array_type(Type array_type, Type expression_type, int line) {

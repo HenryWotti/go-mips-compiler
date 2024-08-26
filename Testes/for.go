@@ -3,9 +3,12 @@ package main
 import "fmt"
 
 func main() {
-	for i := 0; i <= 4; i++ {
-		fmt.Println(i);
-	}
+
+	var x int;
+	for i:= 2; i < 5; i++{
+		x = i;
+        fmt.Println(x);
+    }
 	
 	/* Erros estão comentados */
 	/*

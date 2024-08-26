@@ -247,7 +247,7 @@ void free_func_table(FuncTable* ft) {
 
 // AST
 //----------------------------------------------------------------------------------
-#define CHILDREN_LIMIT 20 // Don't try this at home, kids... :P
+#define CHILDREN_LIMIT 100 // Don't try this at home, kids... :P
 
 struct node {
     NodeKind kind;
@@ -399,6 +399,8 @@ char* kind2str(NodeKind kind) {
         case STR_VAL_NODE:      return "str_val ";
         case VAR_DECL_NODE:     return "var_decl";
         case VAR_USE_NODE:      return "var_use";
+        case PLUS_PLUS_NODE:    return "++";
+        case MINUS_MINUS_NODE:  return "--";
         case ARRAY_ACCESS_NODE: return "array_access";
         case ARRAY_DECL_NODE:   return "array_decl";
         case WRITE_NODE:        return "print";
@@ -406,6 +408,7 @@ char* kind2str(NodeKind kind) {
         case FUNC_CALL_NODE:    return "func_call";
         case F2I_NODE:          return "F2I";
         case I2F_NODE:          return "I2F";
+        case SHORT_ASSIGN_NODE: return ":=";
         default:                return "ERROR!!";
     }
 }

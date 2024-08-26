@@ -4,17 +4,17 @@ import "fmt"
 
 func main() {
 
-	var str1 string;
-	var str2 string;
-	var str3 string;
-	var str4 string;
-	var strTest string;
+	var y float32;
+	var z float32;
+	var x float32;
+	var h int;
+	var w bool;
 
-	strTest = "receba";
+	x = z + y;
 
-	str1 = "Teste 1";
-	str3 = "Teste 3";
-	str4 = strTest;
-	str2 = "Teste 2";
+	x = 7.5 + float32(h);
 
+	h = int(y) + 2;
+
+	h = int(y) + int(z);
 }

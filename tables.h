@@ -97,17 +97,20 @@ void free_func_table(FuncTable* ft);
 
 // AST
 //----------------------------------------------------------------------------------
-#define CHILDREN_LIMIT 20 // Don't try this at home, kids... :P
+#define CHILDREN_LIMIT 100 // Don't try this at home, kids... :P
 
 typedef enum {
     // Operações aritméticas e comparações
     ASSIGN_NODE,         // =
+    SHORT_ASSIGN_NODE,   // :=
     EQ_NODE,             // ==
     MINUS_NODE,          // -
     PLUS_NODE,           // +
     TIMES_NODE,          // *
     OVER_NODE,           // /
     REST_NODE,           // %
+    PLUS_PLUS_NODE,     //++
+    MINUS_MINUS_NODE,   //--
 
     // Operações lógicas
     AND_NODE,            // &&

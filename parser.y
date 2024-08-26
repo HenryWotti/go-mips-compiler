@@ -30,6 +30,7 @@ extern char *yytext;
 extern int yylineno;
 
 Type id_type; //guarda o tipo do ID
+Type id_type2; //guarda o tipo do ID
 Type array_type; //gurda o tipo do Array
 FuncTable *ft; //tabela de funções
 StrTable *st; //tabela de strings
@@ -42,10 +43,12 @@ int has_return = 0; //flag que é marcada caso a funcao não tenha void como ret
 int current_func_idx; //pega o index da funcao, para achar ela na function table e colocar os valores corretor de param_types, type e param_count
 int func_idx; //pega o index da funcao
 int idx;
+int idx2;
 
 Type arg_types[10]; //guarda os tipos de todos os argumentos chamados na chamada de uma função
 
 char copied_id[128]; //copia o ultimo id visto
+char copied_id_array[128]; //copia o ultimo id visto auxiliar para array
 char copied_func_id[128]; //copia o ultimo id de funcao visto
 
 Type last_decl_type; //tipo mais recente declarado
@@ -178,7 +181,7 @@ statement_list:
   }
 | statement_list statement {
       add_child($1, $2); 
-      $$ = $1; 
+      $$ = $1;
   }
 ;
 
@@ -195,7 +198,7 @@ statement:
 | return_statement SEMI
 | ID { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 } LEFT_PARENTESES argument_list_call { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
-} RIGHT_PARENTESES SEMI { 
+} RIGHT_PARENTESES SEMI {
   $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
 } //FUNCTION CALL
 ;
@@ -222,35 +225,41 @@ val_declaration :
 assign_val :
   ID  { 
         check_var(); 
-        id_type = get_type_from_var(yylineno, copied_id, current_scope);
-        idx = lookup_var(vt, copied_id, current_scope);
-        check_isArray(idx, yylineno, copied_id);
+        id_type2 = get_type_from_var(yylineno, copied_id, current_scope);
+        idx2 = lookup_var(vt, copied_id, current_scope);
+        check_isArray(idx2, yylineno, copied_id);
       } ASSIGN assign_expression {
-        check_assignment_type(yylineno, id_type, get_node_type($4));
-        idx = lookup_var(vt, copied_id, current_scope);
-        $$ = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, new_node(VAR_USE_NODE, idx, id_type), $4);
+        check_assignment_type(yylineno, id_type2, get_node_type($4));
+        $$ = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, new_node(VAR_USE_NODE, idx2, id_type2), $4);
       }
+      //new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope))
 ;
 
 array_printable:
   ID { 
       check_var(); 
-      int var_idx = lookup_var(vt, copied_id, current_scope); 
-      $$ = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
+      strcpy(copied_id_array, copied_id);
+      //$$ = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
   } 
   LEFT_BRACKET id_int_compression RIGHT_BRACKET {
     check_array_position_int(yylineno, get_node_type($4));
-    $$ = new_subtree(ARRAY_ACCESS_NODE, get_type_from_var(yylineno, copied_id, current_scope), 2, $$, $4);
+    $$ = new_subtree(ARRAY_ACCESS_NODE, get_type_from_var(yylineno, copied_id_array, current_scope), 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id_array, current_scope), get_type_from_var(yylineno, copied_id_array, current_scope)), $4);
   }
 ;
 
 array_declaration :
   VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec { 
-      new_var(); 
+      new_var();
+      printf("Debug1 \\n");
       idx = lookup_var(vt, copied_id, current_scope); 
+      printf("Debug2 \\n");
       set_isArray_by_idx(vt, idx, 1);
+      printf("Debug3 \\n");
       check_array_position_int(yylineno, INT_TYPE_); // O índice é do tipo INT
-      $$ = new_node(ARRAY_DECL_NODE, idx, last_decl_type);
+      printf("Debug4 \\n");
+      //$$ = new_node(ARRAY_DECL_NODE, idx, last_decl_type);
+      $$ = new_subtree(ARRAY_DECL_NODE, get_type_from_var(yylineno, copied_id, current_scope), 2, new_node(VAR_DECL_NODE, idx, last_decl_type), new_node_int(INT_VAL_NODE, get_data($4), INT_TYPE_));
+      printf("Debug5 \\n");
   }
 ;
 
@@ -364,7 +373,8 @@ operator_expression:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'float32' to 'int'\n", yylineno);
-      $$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $2, $5);
+      //new_node(F2I_NODE, INT_TYPE_, 1, $2)
+      $$ = new_subtree(get_kind($4), INT_TYPE_, 2, new_subtree(F2I_NODE, INT_TYPE_, 1, $2), $5);
     }
 }
 | id_number_compression operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES {
@@ -377,7 +387,8 @@ operator_expression:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'float32' to 'int'\n", yylineno);
-      $$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $1, $4);
+      //$$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $1, $4);
+      $$ = new_subtree(get_kind($2), INT_TYPE_, 2, $1, new_subtree(F2I_NODE, INT_TYPE_, 1, $4));
     }
 }
 | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression {
@@ -390,7 +401,8 @@ operator_expression:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'int' to 'float32'\n", yylineno);
-      $$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $2, $5);
+      //$$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $2, $5);
+      $$ = new_subtree(get_kind($4), FLOAT_TYPE_, 2, new_subtree(I2F_NODE, FLOAT_TYPE_, 1, $2), $5);
     }
 }
 | id_number_compression operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES {
@@ -403,7 +415,8 @@ operator_expression:
       exit(EXIT_FAILURE);
     } else {
       printf("Line(%d): Converting 'int' to 'float32'\n", yylineno);
-      $$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $1, $4);
+      //$$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $1, $4);
+      $$ = new_subtree(get_kind($2), FLOAT_TYPE_, 2, $1, new_subtree(I2F_NODE, FLOAT_TYPE_, 1, $4));
     }
 }
 | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES {
@@ -427,14 +440,16 @@ operator_expression:
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
         exit(EXIT_FAILURE);
     }
-    $$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $2, $6);
+    //$$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $2, $6);
+    $$ = new_subtree(get_kind($4), INT_TYPE_, 2, new_subtree(I2F_NODE, INT_TYPE_, 1, $2), new_subtree(I2F_NODE, INT_TYPE_, 1, $6));
 }
 | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES {
     if (get_node_type($2) != INT_TYPE_ || get_node_type($6) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
         exit(EXIT_FAILURE);
     }
-    $$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $2, $6);
+    //$$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $2, $6);
+    $$ = new_subtree(get_kind($4), FLOAT_TYPE_, 2, new_subtree(I2F_NODE, FLOAT_TYPE_, 1, $2), new_subtree(I2F_NODE, FLOAT_TYPE_, 1, $6));
 }
 ;
 
@@ -469,45 +484,76 @@ if_expression:
       $$ = $1; // Como o BOOL_VAL já é um nó, simplesmente atribuímos $1 a $$.
   }
 | id_number_compression comparadors id_number_compression { 
-      $$ = new_subtree(COMPARE_NODE, BOOL_TYPE_, 3, $1, $2, $3); 
+      $$ = new_subtree(get_kind($2), VOID_TYPE_, 2, $1, $3); 
   }
 | operator_expression comparadors id_number_compression { 
-      $$ = new_subtree(COMPARE_NODE, BOOL_TYPE_, 3, $1, $2, $3); 
+      $$ = new_subtree(get_kind($2), VOID_TYPE_, 2, $1, $3);
   }
+  //$$ = new_subtree(get_kind($3), VOID_TYPE_, 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), $4);
 ;
 
 for_statement:
   FOR ID { 
       last_decl_type = INT_TYPE_; 
       new_var(); 
-      $$ = new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), INT_TYPE_); 
   } SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block {
-      AST *assign_node = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, $1, $6);
-      $$ = new_subtree(FOR_NODE, VOID_TYPE_, 4, $1, assign_node, $9, $10);
+      // $2: ID (variável), $4: SHORT_ASSIGN, $5: INT_VAL, $6: SEMI, $7: for_comparison, $8: SEMI, $9: for_update, $10: block
+
+      // Inicialização: ID := INT_VAL
+      AST *init_node = new_subtree(SHORT_ASSIGN_NODE, VOID_TYPE_, 2, 
+                                   new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), INT_TYPE_), 
+                                   new_node_int(INT_VAL_NODE, get_data($5), INT_TYPE_));
+
+      // Condição de continuação do loop (e.g., i < 5)
+      AST *cond_node = $7; 
+
+      // Atualização (e.g., i++)
+      AST *update_node = $9; 
+
+      // Bloco do loop
+      AST *body_node = $10;
+
+      // Nó principal do loop for
+      $$ = new_subtree(FOR_NODE, VOID_TYPE_, 4, init_node, cond_node, update_node, body_node);
   }
 ;
 
+
 for_comparison:
   ID { 
-      check_var(); 
-      $$ = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)); 
+      check_var();
   } comparadors id_number_compression {
-      $$ = new_subtree(COMPARE_NODE, BOOL_TYPE_, 2, $1, $3); 
+      // Cria o nó de comparação entre a variável e a expressão
+      $$ = new_subtree(get_kind($3), VOID_TYPE_, 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), $4);
   }
 ;
 
 for_update:
   ID { 
       check_var(); 
-      $$ = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)); 
   } PLUS_PLUS {
-      $$ = new_subtree(PLUS_NODE, INT_TYPE_, 2, $1, new_node(INT_VAL_NODE, 1, INT_TYPE_));
+      // Cria um nó para a operação de incremento (i + 1)
+      AST *increment_node = new_subtree(PLUS_NODE, INT_TYPE_, 2, 
+                              new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+                              new_node_int(INT_VAL_NODE, 1, INT_TYPE_));
+                              
+      // Cria um nó para a atribuição (i = i + 1)
+      $$ = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, 
+            new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+            increment_node);
   }
 | ID { 
       check_var(); 
-      $$ = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)); 
   } MINUS_MINUS {
-      $$ = new_subtree(MINUS_NODE, INT_TYPE_, 2, $1, new_node(INT_VAL_NODE, 1, INT_TYPE_));
+      // Cria um nó para a operação de incremento (i + 1)
+      AST *increment_node = new_subtree(MINUS_NODE, INT_TYPE_, 2, 
+                              new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+                              new_node_int(INT_VAL_NODE, 1, INT_TYPE_));
+                              
+      // Cria um nó para a atribuição (i = i + 1)
+      $$ = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, 
+            new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+            increment_node);
   }
 ;
 
@@ -524,7 +570,7 @@ print_args:
   }
 | id_number_compression { $$ = $1; }
 | array_printable { $$ = $1; }
-| FORMAT_STRING COMMA ID { 
+/*| FORMAT_STRING COMMA ID { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); 
@@ -575,12 +621,12 @@ print_args:
       check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); 
       add_child($1, new_subtree(WRITE_NODE, BOOL_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       $$ = $1;
-  }
+  }*/
 ;
 
 scanf_operation:
     SCANF LEFT_PARENTESES scan_args RIGHT_PARENTESES {
-        $$ = new_subtree(READ_NODE, VOID_TYPE_, 1, $3);
+        $$ = $3;
     }
 ;
 
