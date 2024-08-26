@@ -250,16 +250,11 @@ array_printable:
 array_declaration :
   VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec { 
       new_var();
-      printf("Debug1 \\n");
       idx = lookup_var(vt, copied_id, current_scope); 
-      printf("Debug2 \\n");
       set_isArray_by_idx(vt, idx, 1);
-      printf("Debug3 \\n");
       check_array_position_int(yylineno, INT_TYPE_); // O índice é do tipo INT
-      printf("Debug4 \\n");
       //$$ = new_node(ARRAY_DECL_NODE, idx, last_decl_type);
       $$ = new_subtree(ARRAY_DECL_NODE, get_type_from_var(yylineno, copied_id, current_scope), 2, new_node(VAR_DECL_NODE, idx, last_decl_type), new_node_int(INT_VAL_NODE, get_data($4), INT_TYPE_));
-      printf("Debug5 \\n");
   }
 ;
 
@@ -267,16 +262,24 @@ array_assign :
   ID { 
       check_var(); 
       array_type = get_type_from_var(yylineno, copied_id, current_scope);
-      idx = lookup_var(vt, copied_id, current_scope);
-      check_isNotArray(idx, yylineno);
-      $$ = new_node(VAR_USE_NODE, idx, array_type);
+      idx2 = lookup_var(vt, copied_id, current_scope);
+      check_isNotArray(idx2, yylineno);  
   } 
   LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression {
+    // Verifica se a posição do array é um inteiro
     check_array_position_int(yylineno, get_node_type($4));
+    
+    // Verifica se o tipo do valor atribuído é compatível com o tipo do array
     check_array_type(array_type, get_node_type($7), yylineno);
-    $$ = new_subtree(ASSIGN_NODE, VOID_TYPE_, 3, $$, $4, $7); // Cria subárvore para atribuição
+
+    // Cria o nó de acesso ao array
+    //Node* array_access_node = new_subtree(ARRAY_ACCESS_NODE, array_type, 2, $1, $4); 
+
+    // Cria a subárvore para a atribuição
+    $$ = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, new_subtree(ARRAY_ACCESS_NODE, array_type, 2, new_node(VAR_DECL_NODE, idx2, array_type), $4), $7);
   }
 ;
+
 
 id_int_compression:
   ID { 

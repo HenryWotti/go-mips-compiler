@@ -76,9 +76,9 @@ Grammar
 
    40 array_declaration: VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec
 
-   41 @10: ε
+   41 $@10: ε
 
-   42 array_assign: ID @10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression
+   42 array_assign: ID $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression
 
    43 id_int_compression: ID
    44                   | INT_VAL
@@ -335,7 +335,7 @@ Nonterminals, with rules where they appear
     array_assign (84)
         on left: 42
         on right: 25
-    @10 (85)
+    $@10 (85)
         on left: 41
         on right: 42
     id_int_compression (86)
@@ -803,15 +803,15 @@ State 40
 
    32 statement: ID • $@6 LEFT_PARENTESES argument_list_call $@7 RIGHT_PARENTESES SEMI
    37 assign_val: ID • $@8 ASSIGN assign_expression
-   42 array_assign: ID • @10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression
+   42 array_assign: ID • $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression
 
-    LEFT_BRACKET  reduce using rule 41 (@10)
+    LEFT_BRACKET  reduce using rule 41 ($@10)
     ASSIGN        reduce using rule 36 ($@8)
     $default      reduce using rule 30 ($@6)
 
-    $@6  go to state 78
-    $@8  go to state 79
-    @10  go to state 80
+    $@6   go to state 78
+    $@8   go to state 79
+    $@10  go to state 80
 
 
 State 41
@@ -1213,7 +1213,7 @@ State 79
 
 State 80
 
-   42 array_assign: ID @10 • LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression
+   42 array_assign: ID $@10 • LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression
 
     LEFT_BRACKET  shift, and go to state 122
 
@@ -1577,7 +1577,7 @@ State 121
 
 State 122
 
-   42 array_assign: ID @10 LEFT_BRACKET • id_int_compression RIGHT_BRACKET ASSIGN assign_expression
+   42 array_assign: ID $@10 LEFT_BRACKET • id_int_compression RIGHT_BRACKET ASSIGN assign_expression
 
     INT_VAL  shift, and go to state 155
     ID       shift, and go to state 156
@@ -1901,7 +1901,7 @@ State 156
 
 State 157
 
-   42 array_assign: ID @10 LEFT_BRACKET id_int_compression • RIGHT_BRACKET ASSIGN assign_expression
+   42 array_assign: ID $@10 LEFT_BRACKET id_int_compression • RIGHT_BRACKET ASSIGN assign_expression
 
     RIGHT_BRACKET  shift, and go to state 177
 
@@ -2083,7 +2083,7 @@ State 176
 
 State 177
 
-   42 array_assign: ID @10 LEFT_BRACKET id_int_compression RIGHT_BRACKET • ASSIGN assign_expression
+   42 array_assign: ID $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET • ASSIGN assign_expression
 
     ASSIGN  shift, and go to state 201
 
@@ -2298,7 +2298,7 @@ State 200
 
 State 201
 
-   42 array_assign: ID @10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN • assign_expression
+   42 array_assign: ID $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN • assign_expression
 
     FLOAT_TYPE_CAST  shift, and go to state 69
     INT_TYPE_CAST    shift, and go to state 70
@@ -2452,7 +2452,7 @@ State 220
 
 State 221
 
-   42 array_assign: ID @10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression •
+   42 array_assign: ID $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression •
 
     $default  reduce using rule 42 (array_assign)
 
