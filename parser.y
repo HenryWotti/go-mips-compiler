@@ -288,7 +288,7 @@ id_int_compression:
       $$ = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
   }
 | INT_VAL { 
-      $$ = $1; 
+      $$ = $1;
   }
 ;
 
@@ -318,7 +318,7 @@ assign_expression :
     strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
   } LEFT_PARENTESES argument_list_call { 
       check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
-    } RIGHT_PARENTESES { 
+    } RIGHT_PARENTESES {
         $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
       } //FUNCTION CALL
 ;
@@ -483,7 +483,7 @@ if_expression:
       $$ = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), expr_type); 
   }
 | BOOL_VAL { 
-      check_conditional_type(yylineno, BOOL_TYPE_, "if"); 
+      check_conditional_type(yylineno, BOOL_TYPE_, "if");
       $$ = $1; // Como o BOOL_VAL já é um nó, simplesmente atribuímos $1 a $$.
   }
 | id_number_compression comparadors id_number_compression { 

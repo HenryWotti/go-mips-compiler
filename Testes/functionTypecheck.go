@@ -30,6 +30,7 @@ func main() {
 	var k bool;
 	somaFloat = add(y,z);
 	var j bool;
+	noReturn();
 	j = variosArgumentos(7.2,"test",true,7);
 	j = variosArgumentos(y,str,k,x);
 

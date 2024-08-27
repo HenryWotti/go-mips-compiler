@@ -157,7 +157,8 @@ typedef enum {
 
     // Estruturas gerais do programa
     PROGRAM_NODE,        // Nó raiz do programa
-    MAIN_NODE            // Função principal (main)
+    MAIN_NODE,            // Função principal (main)
+    ARGUMENT_NODE
 } NodeKind;
 
 struct node; // Opaque structure to ensure encapsulation.

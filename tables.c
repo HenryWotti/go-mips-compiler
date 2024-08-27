@@ -409,6 +409,7 @@ char* kind2str(NodeKind kind) {
         case F2I_NODE:          return "F2I";
         case I2F_NODE:          return "I2F";
         case SHORT_ASSIGN_NODE: return ":=";
+        case ARGUMENT_NODE:     return "arg_node";
         default:                return "ERROR!!";
     }
 }

@@ -2135,7 +2135,7 @@ yyreduce:
   case 45: /* id_int_compression: INT_VAL  */
 #line 290 "parser.y"
           { 
-      yyval = yyvsp[0]; 
+      yyval = yyvsp[0];
   }
 #line 2141 "parser.c"
     break;
@@ -2204,7 +2204,7 @@ yyreduce:
 
   case 53: /* assign_expression: ID $@11 LEFT_PARENTESES argument_list_call $@12 RIGHT_PARENTESES  */
 #line 321 "parser.y"
-                       { 
+                       {
         yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
       }
 #line 2211 "parser.c"
@@ -2455,7 +2455,7 @@ yyreduce:
   case 80: /* if_expression: BOOL_VAL  */
 #line 485 "parser.y"
            { 
-      check_conditional_type(yylineno, BOOL_TYPE_, "if"); 
+      check_conditional_type(yylineno, BOOL_TYPE_, "if");
       yyval = yyvsp[0]; // Como o BOOL_VAL já é um nó, simplesmente atribuímos $1 a $$.
   }
 #line 2462 "parser.c"
