@@ -118,8 +118,9 @@ char copied_func_id[128]; //copia o ultimo id de funcao visto
 Type last_decl_type; //tipo mais recente declarado
 
 AST *ast_root = NULL;
+AST* argument_list_root = NULL; 
 
-#line 123 "parser.c"
+#line 124 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -629,19 +630,19 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   127,   127,   133,   137,   138,   138,   142,   142,   148,
-     154,   155,   159,   160,   159,   167,   168,   168,   172,   179,
-     182,   189,   190,   191,   192,   193,   194,   195,   196,   197,
-     198,   199,   200,   199,   207,   211,   220,   226,   226,   239,
-     239,   251,   262,   262,   285,   290,   296,   297,   298,   299,
-     308,   317,   319,   317,   327,   328,   328,   333,   333,   340,
-     344,   347,   350,   356,   357,   361,   369,   383,   397,   411,
-     425,   433,   441,   449,   460,   465,   466,   470,   473,   479,
-     485,   489,   492,   499,   499,   526,   526,   535,   535,   548,
-     548,   564,   570,   574,   575,   631,   637,   643,   649,   655,
-     661,   668,   675,   682,   692,   693,   694,   695,   696,   700,
-     701,   705,   706,   707,   708,   709,   710,   711,   715,   716,
-     717,   718,   719
+       0,   128,   128,   134,   138,   139,   139,   143,   143,   149,
+     155,   156,   160,   161,   160,   168,   169,   169,   173,   180,
+     183,   190,   191,   192,   193,   194,   195,   196,   197,   198,
+     199,   200,   201,   200,   208,   212,   221,   227,   227,   240,
+     240,   252,   263,   263,   286,   291,   297,   298,   299,   300,
+     309,   318,   320,   318,   328,   329,   329,   334,   334,   341,
+     345,   348,   351,   357,   358,   362,   370,   384,   398,   412,
+     426,   434,   442,   450,   461,   466,   467,   471,   474,   480,
+     486,   490,   493,   500,   500,   527,   527,   536,   536,   549,
+     549,   565,   571,   575,   576,   632,   638,   644,   650,   656,
+     662,   669,   676,   683,   693,   694,   695,   696,   697,   701,
+     702,   706,   707,   708,   709,   710,   711,   712,   716,   717,
+     718,   719,   720
 };
 #endif
 
@@ -1902,186 +1903,186 @@ yyreduce:
     switch (yyn)
       {
   case 2: /* program: package_declaration import_declaration list_func_generic func_main  */
-#line 127 "parser.y"
+#line 128 "parser.y"
                                                                      {
     ast_root = yyvsp[0];  // Atribui a raiz da AST
   }
-#line 1910 "parser.c"
+#line 1911 "parser.c"
     break;
 
   case 5: /* $@1: %empty  */
-#line 138 "parser.y"
+#line 139 "parser.y"
                     { add_string(st, yytext); }
-#line 1916 "parser.c"
+#line 1917 "parser.c"
     break;
 
   case 7: /* $@2: %empty  */
-#line 142 "parser.y"
+#line 143 "parser.y"
             { current_scope++; }
-#line 1922 "parser.c"
+#line 1923 "parser.c"
     break;
 
   case 8: /* func_main: FUNC MAIN $@2 LEFT_PARENTESES RIGHT_PARENTESES block  */
-#line 142 "parser.y"
+#line 143 "parser.y"
                                                                         {
     yyval = new_subtree(MAIN_NODE, VOID_TYPE_, 1, yyvsp[0]);
   }
-#line 1930 "parser.c"
+#line 1931 "parser.c"
     break;
 
   case 9: /* block: LEFT_BRACE statement_list RIGHT_BRACE  */
-#line 148 "parser.y"
+#line 149 "parser.y"
                                         {
     yyval = new_subtree(BLOCK_NODE, VOID_TYPE_, 1, yyvsp[-1]);
   }
-#line 1938 "parser.c"
+#line 1939 "parser.c"
     break;
 
   case 12: /* $@3: %empty  */
-#line 159 "parser.y"
+#line 160 "parser.y"
           { strcpy(copied_func_id, copied_id); current_scope++; current_func_idx = new_func();
   }
-#line 1945 "parser.c"
+#line 1946 "parser.c"
     break;
 
   case 13: /* $@4: %empty  */
-#line 160 "parser.y"
+#line 161 "parser.y"
                                                              { update_func_return_type(ft, current_func_idx, last_decl_type); current_return_type=last_decl_type;
   }
-#line 1952 "parser.c"
+#line 1953 "parser.c"
     break;
 
   case 14: /* func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block  */
-#line 161 "parser.y"
+#line 162 "parser.y"
           { 
     has_return = 0;
   }
-#line 1960 "parser.c"
+#line 1961 "parser.c"
     break;
 
   case 16: /* $@5: %empty  */
-#line 168 "parser.y"
+#line 169 "parser.y"
                { new_var(); add_param_type(ft, current_func_idx, last_decl_type, yylineno);}
-#line 1966 "parser.c"
+#line 1967 "parser.c"
     break;
 
   case 18: /* return_statement: RETURN assign_expression  */
-#line 172 "parser.y"
+#line 173 "parser.y"
                            { 
     check_return_type(yylineno, current_return_type, get_node_type(yyvsp[0]), 1);
     has_return = 1; // Indicar que um return foi encontrado
   }
-#line 1975 "parser.c"
+#line 1976 "parser.c"
     break;
 
   case 19: /* statement_list: statement  */
-#line 179 "parser.y"
+#line 180 "parser.y"
             {
     yyval = new_subtree(STATEMANT_LIST, VOID_TYPE_, 1, yyvsp[0]); 
   }
-#line 1983 "parser.c"
+#line 1984 "parser.c"
     break;
 
   case 20: /* statement_list: statement_list statement  */
-#line 182 "parser.y"
+#line 183 "parser.y"
                            {
       add_child(yyvsp[-1], yyvsp[0]); 
       yyval = yyvsp[-1];
   }
-#line 1992 "parser.c"
+#line 1993 "parser.c"
     break;
 
   case 31: /* $@6: %empty  */
-#line 199 "parser.y"
+#line 200 "parser.y"
      { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 }
-#line 1999 "parser.c"
+#line 2000 "parser.c"
     break;
 
   case 32: /* $@7: %empty  */
-#line 200 "parser.y"
+#line 201 "parser.y"
                                      { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
 }
-#line 2006 "parser.c"
+#line 2007 "parser.c"
     break;
 
   case 33: /* statement: ID $@6 LEFT_PARENTESES argument_list_call $@7 RIGHT_PARENTESES SEMI  */
-#line 201 "parser.y"
+#line 202 "parser.y"
                         {
-  yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
+  yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
 }
-#line 2014 "parser.c"
+#line 2015 "parser.c"
     break;
 
   case 34: /* string_list: STRING_VAL  */
-#line 207 "parser.y"
+#line 208 "parser.y"
              {
     int str_index = add_string(st, yytext);
     yyval = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);  // Cria um nó da AST para a string
   }
-#line 2023 "parser.c"
+#line 2024 "parser.c"
     break;
 
   case 35: /* string_list: string_list COMMA STRING_VAL  */
-#line 211 "parser.y"
+#line 212 "parser.y"
                               {
     int str_index = add_string(st, yytext);
     AST *str_node = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);  // Cria um nó para a nova string
     add_child(yyvsp[-2], str_node);  // Adiciona a nova string como filha da lista existente
     yyval = yyvsp[-2];  // A lista é retornada
 }
-#line 2034 "parser.c"
+#line 2035 "parser.c"
     break;
 
   case 36: /* val_declaration: VAR ID type_spec  */
-#line 220 "parser.y"
+#line 221 "parser.y"
                    { new_var();
   yyval = new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), last_decl_type);
   }
-#line 2042 "parser.c"
+#line 2043 "parser.c"
     break;
 
   case 37: /* $@8: %empty  */
-#line 226 "parser.y"
+#line 227 "parser.y"
       { 
         check_var(); 
         id_type2 = get_type_from_var(yylineno, copied_id, current_scope);
         idx2 = lookup_var(vt, copied_id, current_scope);
         check_isArray(idx2, yylineno, copied_id);
       }
-#line 2053 "parser.c"
+#line 2054 "parser.c"
     break;
 
   case 38: /* assign_val: ID $@8 ASSIGN assign_expression  */
-#line 231 "parser.y"
+#line 232 "parser.y"
                                  {
         check_assignment_type(yylineno, id_type2, get_node_type(yyvsp[0]));
         yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, new_node(VAR_USE_NODE, idx2, id_type2), yyvsp[0]);
       }
-#line 2062 "parser.c"
+#line 2063 "parser.c"
     break;
 
   case 39: /* $@9: %empty  */
-#line 239 "parser.y"
+#line 240 "parser.y"
      { 
       check_var(); 
       strcpy(copied_id_array, copied_id);
       //$$ = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
   }
-#line 2072 "parser.c"
+#line 2073 "parser.c"
     break;
 
   case 40: /* array_printable: ID $@9 LEFT_BRACKET id_int_compression RIGHT_BRACKET  */
-#line 244 "parser.y"
+#line 245 "parser.y"
                                                 {
     check_array_position_int(yylineno, get_node_type(yyvsp[-1]));
     yyval = new_subtree(ARRAY_ACCESS_NODE, get_type_from_var(yylineno, copied_id_array, current_scope), 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id_array, current_scope), get_type_from_var(yylineno, copied_id_array, current_scope)), yyvsp[-1]);
   }
-#line 2081 "parser.c"
+#line 2082 "parser.c"
     break;
 
   case 41: /* array_declaration: VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec  */
-#line 251 "parser.y"
+#line 252 "parser.y"
                                                       { 
       new_var();
       idx = lookup_var(vt, copied_id, current_scope); 
@@ -2090,22 +2091,22 @@ yyreduce:
       //$$ = new_node(ARRAY_DECL_NODE, idx, last_decl_type);
       yyval = new_subtree(ARRAY_DECL_NODE, get_type_from_var(yylineno, copied_id, current_scope), 2, new_node(VAR_DECL_NODE, idx, last_decl_type), new_node_int(INT_VAL_NODE, get_data(yyvsp[-2]), INT_TYPE_));
   }
-#line 2094 "parser.c"
+#line 2095 "parser.c"
     break;
 
   case 42: /* $@10: %empty  */
-#line 262 "parser.y"
+#line 263 "parser.y"
      { 
       check_var(); 
       array_type = get_type_from_var(yylineno, copied_id, current_scope);
       idx2 = lookup_var(vt, copied_id, current_scope);
       check_isNotArray(idx2, yylineno);  
   }
-#line 2105 "parser.c"
+#line 2106 "parser.c"
     break;
 
   case 43: /* array_assign: ID $@10 LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression  */
-#line 268 "parser.y"
+#line 269 "parser.y"
                                                                          {
     // Verifica se a posição do array é um inteiro
     check_array_position_int(yylineno, get_node_type(yyvsp[-3]));
@@ -2119,47 +2120,47 @@ yyreduce:
     // Cria a subárvore para a atribuição
     yyval = new_subtree(ASSIGN_NODE, VOID_TYPE_, 2, new_subtree(ARRAY_ACCESS_NODE, array_type, 2, new_node(VAR_DECL_NODE, idx2, array_type), yyvsp[-3]), yyvsp[0]);
   }
-#line 2123 "parser.c"
+#line 2124 "parser.c"
     break;
 
   case 44: /* id_int_compression: ID  */
-#line 285 "parser.y"
+#line 286 "parser.y"
      { 
       check_var(); 
       int var_idx = lookup_var(vt, copied_id, current_scope); 
       yyval = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
   }
-#line 2133 "parser.c"
+#line 2134 "parser.c"
     break;
 
   case 45: /* id_int_compression: INT_VAL  */
-#line 290 "parser.y"
+#line 291 "parser.y"
           { 
       yyval = yyvsp[0];
   }
-#line 2141 "parser.c"
+#line 2142 "parser.c"
     break;
 
   case 46: /* assign_expression: string_list  */
-#line 296 "parser.y"
+#line 297 "parser.y"
               { yyval = yyvsp[0]; }
-#line 2147 "parser.c"
+#line 2148 "parser.c"
     break;
 
   case 47: /* assign_expression: id_number_compression  */
-#line 297 "parser.y"
+#line 298 "parser.y"
                         { yyval = yyvsp[0]; }
-#line 2153 "parser.c"
+#line 2154 "parser.c"
     break;
 
   case 48: /* assign_expression: operator_expression  */
-#line 298 "parser.y"
+#line 299 "parser.y"
                       { yyval = yyvsp[0]; }
-#line 2159 "parser.c"
+#line 2160 "parser.c"
     break;
 
   case 49: /* assign_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 299 "parser.y"
+#line 300 "parser.y"
                                                        {
     if (get_node_type(yyvsp[-1]) == FLOAT_TYPE_) {
         yyval = new_subtree(F2I_NODE, INT_TYPE_, 1, yyvsp[-1]);
@@ -2169,11 +2170,11 @@ yyreduce:
         exit(EXIT_FAILURE);
     }
 }
-#line 2173 "parser.c"
+#line 2174 "parser.c"
     break;
 
   case 50: /* assign_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 308 "parser.y"
+#line 309 "parser.y"
                                                          {
     if (get_node_type(yyvsp[-1]) == INT_TYPE_) {
         yyval = new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-1]);
@@ -2183,87 +2184,87 @@ yyreduce:
         exit(EXIT_FAILURE);
     }
 }
-#line 2187 "parser.c"
+#line 2188 "parser.c"
     break;
 
   case 51: /* $@11: %empty  */
-#line 317 "parser.y"
+#line 318 "parser.y"
      {
     strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
   }
-#line 2195 "parser.c"
+#line 2196 "parser.c"
     break;
 
   case 52: /* $@12: %empty  */
-#line 319 "parser.y"
+#line 320 "parser.y"
                                        { 
       check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
     }
-#line 2203 "parser.c"
+#line 2204 "parser.c"
     break;
 
   case 53: /* assign_expression: ID $@11 LEFT_PARENTESES argument_list_call $@12 RIGHT_PARENTESES  */
-#line 321 "parser.y"
+#line 322 "parser.y"
                        {
-        yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
+        yyval = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
       }
-#line 2211 "parser.c"
+#line 2212 "parser.c"
     break;
 
   case 55: /* $@13: %empty  */
-#line 328 "parser.y"
+#line 329 "parser.y"
      { 
     check_var(); 
     arg_types[argument_count] = get_type_from_var(yylineno, copied_id, current_scope); 
     argument_count++; 
 }
-#line 2221 "parser.c"
+#line 2222 "parser.c"
     break;
 
   case 57: /* $@14: %empty  */
-#line 333 "parser.y"
+#line 334 "parser.y"
                { 
     arg_types[argument_count] = get_node_type(yyvsp[0]); 
     argument_count++; 
 }
-#line 2230 "parser.c"
+#line 2231 "parser.c"
     break;
 
   case 59: /* argument_val: STRING_VAL  */
-#line 340 "parser.y"
+#line 341 "parser.y"
              { 
       int str_index = add_string(st, yytext);
       yyval = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);
   }
-#line 2239 "parser.c"
+#line 2240 "parser.c"
     break;
 
   case 60: /* argument_val: BOOL_VAL  */
-#line 344 "parser.y"
+#line 345 "parser.y"
            { 
       yyval = yyvsp[0];
   }
-#line 2247 "parser.c"
+#line 2248 "parser.c"
     break;
 
   case 61: /* argument_val: INT_VAL  */
-#line 347 "parser.y"
+#line 348 "parser.y"
           { 
       yyval = yyvsp[0];
   }
-#line 2255 "parser.c"
+#line 2256 "parser.c"
     break;
 
   case 62: /* argument_val: FLOAT_VAL  */
-#line 350 "parser.y"
+#line 351 "parser.y"
             { 
       yyval = yyvsp[0];
   }
-#line 2263 "parser.c"
+#line 2264 "parser.c"
     break;
 
   case 65: /* operator_expression: id_number_compression operators id_number_compression  */
-#line 361 "parser.y"
+#line 362 "parser.y"
                                                         {
     if (get_node_type(yyvsp[-2]) == get_node_type(yyvsp[0])) {
       yyval = new_subtree(get_kind(yyvsp[-1]), get_node_type(yyvsp[-2]), 2, yyvsp[-2], yyvsp[0]);
@@ -2272,11 +2273,11 @@ yyreduce:
       exit(EXIT_FAILURE);
     }
 }
-#line 2276 "parser.c"
+#line 2277 "parser.c"
     break;
 
   case 66: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression  */
-#line 369 "parser.y"
+#line 370 "parser.y"
                                                                                        {
     if (get_node_type(yyvsp[-3]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'int'.\n", yylineno, get_text(get_node_type(yyvsp[-3])));
@@ -2291,11 +2292,11 @@ yyreduce:
       yyval = new_subtree(get_kind(yyvsp[-1]), INT_TYPE_, 2, new_subtree(F2I_NODE, INT_TYPE_, 1, yyvsp[-3]), yyvsp[0]);
     }
 }
-#line 2295 "parser.c"
+#line 2296 "parser.c"
     break;
 
   case 67: /* operator_expression: id_number_compression operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 383 "parser.y"
+#line 384 "parser.y"
                                                                                        {
     if (get_node_type(yyvsp[-1]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'int'.\n", yylineno, get_text(get_node_type(yyvsp[-1])));
@@ -2310,11 +2311,11 @@ yyreduce:
       yyval = new_subtree(get_kind(yyvsp[-3]), INT_TYPE_, 2, yyvsp[-4], new_subtree(F2I_NODE, INT_TYPE_, 1, yyvsp[-1]));
     }
 }
-#line 2314 "parser.c"
+#line 2315 "parser.c"
     break;
 
   case 68: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression  */
-#line 397 "parser.y"
+#line 398 "parser.y"
                                                                                          {
     if (get_node_type(yyvsp[-3]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'float32'.\n", yylineno, get_text(get_node_type(yyvsp[-3])));
@@ -2329,11 +2330,11 @@ yyreduce:
       yyval = new_subtree(get_kind(yyvsp[-1]), FLOAT_TYPE_, 2, new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-3]), yyvsp[0]);
     }
 }
-#line 2333 "parser.c"
+#line 2334 "parser.c"
     break;
 
   case 69: /* operator_expression: id_number_compression operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 411 "parser.y"
+#line 412 "parser.y"
                                                                                          {
     if (get_node_type(yyvsp[-1]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Cannot cast type '%s' to 'float32'.\n", yylineno, get_text(get_node_type(yyvsp[-1])));
@@ -2348,11 +2349,11 @@ yyreduce:
       yyval = new_subtree(get_kind(yyvsp[-3]), FLOAT_TYPE_, 2, yyvsp[-4], new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-1]));
     }
 }
-#line 2352 "parser.c"
+#line 2353 "parser.c"
     break;
 
   case 70: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 425 "parser.y"
+#line 426 "parser.y"
                                                                                                                         {
     if (get_node_type(yyvsp[-5]) != FLOAT_TYPE_ || get_node_type(yyvsp[-1]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2361,11 +2362,11 @@ yyreduce:
     printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(get_node_type(yyvsp[-5])), get_text(get_node_type(yyvsp[-1])));
     exit(EXIT_FAILURE);
 }
-#line 2365 "parser.c"
+#line 2366 "parser.c"
     break;
 
   case 71: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 433 "parser.y"
+#line 434 "parser.y"
                                                                                                                         {
     if (get_node_type(yyvsp[-5]) != INT_TYPE_ || get_node_type(yyvsp[-1]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2374,11 +2375,11 @@ yyreduce:
     printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(get_node_type(yyvsp[-5])), get_text(get_node_type(yyvsp[-1])));
     exit(EXIT_FAILURE);
 }
-#line 2378 "parser.c"
+#line 2379 "parser.c"
     break;
 
   case 72: /* operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 441 "parser.y"
+#line 442 "parser.y"
                                                                                                                       {
     if (get_node_type(yyvsp[-5]) != FLOAT_TYPE_ || get_node_type(yyvsp[-1]) != FLOAT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2387,11 +2388,11 @@ yyreduce:
     //$$ = new_subtree(F2I_NODE, INT_TYPE_, 2, $2, $6);
     yyval = new_subtree(get_kind(yyvsp[-3]), INT_TYPE_, 2, new_subtree(I2F_NODE, INT_TYPE_, 1, yyvsp[-5]), new_subtree(I2F_NODE, INT_TYPE_, 1, yyvsp[-1]));
 }
-#line 2391 "parser.c"
+#line 2392 "parser.c"
     break;
 
   case 73: /* operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES  */
-#line 449 "parser.y"
+#line 450 "parser.y"
                                                                                                                           {
     if (get_node_type(yyvsp[-5]) != INT_TYPE_ || get_node_type(yyvsp[-1]) != INT_TYPE_) {
         printf("SEMANTIC ERROR (%d): Invalid cast in expression.\n", yylineno);
@@ -2400,94 +2401,94 @@ yyreduce:
     //$$ = new_subtree(I2F_NODE, FLOAT_TYPE_, 2, $2, $6);
     yyval = new_subtree(get_kind(yyvsp[-3]), FLOAT_TYPE_, 2, new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-5]), new_subtree(I2F_NODE, FLOAT_TYPE_, 1, yyvsp[-1]));
 }
-#line 2404 "parser.c"
+#line 2405 "parser.c"
     break;
 
   case 74: /* id_number_compression: ID  */
-#line 460 "parser.y"
+#line 461 "parser.y"
       { check_var(); 
         idx = lookup_var(vt, copied_id, current_scope);
         check_isArray(idx, yylineno, copied_id);
         yyval = new_node(VAR_USE_NODE, idx, get_type_from_var(yylineno, copied_id, current_scope));
       }
-#line 2414 "parser.c"
+#line 2415 "parser.c"
     break;
 
   case 75: /* id_number_compression: number_val_spec  */
-#line 465 "parser.y"
+#line 466 "parser.y"
                   { yyval = yyvsp[0]; }
-#line 2420 "parser.c"
+#line 2421 "parser.c"
     break;
 
   case 76: /* id_number_compression: BOOL_VAL  */
-#line 466 "parser.y"
+#line 467 "parser.y"
            { yyval = yyvsp[0]; }
-#line 2426 "parser.c"
+#line 2427 "parser.c"
     break;
 
   case 77: /* if_statement: IF if_expression block  */
-#line 470 "parser.y"
+#line 471 "parser.y"
                                    { 
       yyval = new_subtree(IF_NODE, VOID_TYPE_, 2, yyvsp[-1], yyvsp[0]);
   }
-#line 2434 "parser.c"
+#line 2435 "parser.c"
     break;
 
   case 78: /* if_statement: IF if_expression block ELSE block  */
-#line 473 "parser.y"
+#line 474 "parser.y"
                                     { 
       yyval = new_subtree(IF_NODE, VOID_TYPE_, 3, yyvsp[-3], yyvsp[-2], yyvsp[0]);
   }
-#line 2442 "parser.c"
+#line 2443 "parser.c"
     break;
 
   case 79: /* if_expression: ID  */
-#line 479 "parser.y"
+#line 480 "parser.y"
      { 
       check_var(); 
       Type expr_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_conditional_type(yylineno, expr_type, "if"); 
       yyval = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), expr_type); 
   }
-#line 2453 "parser.c"
+#line 2454 "parser.c"
     break;
 
   case 80: /* if_expression: BOOL_VAL  */
-#line 485 "parser.y"
+#line 486 "parser.y"
            { 
       check_conditional_type(yylineno, BOOL_TYPE_, "if");
       yyval = yyvsp[0]; // Como o BOOL_VAL já é um nó, simplesmente atribuímos $1 a $$.
   }
-#line 2462 "parser.c"
+#line 2463 "parser.c"
     break;
 
   case 81: /* if_expression: id_number_compression comparadors id_number_compression  */
-#line 489 "parser.y"
+#line 490 "parser.y"
                                                           { 
       yyval = new_subtree(get_kind(yyvsp[-1]), VOID_TYPE_, 2, yyvsp[-2], yyvsp[0]); 
   }
-#line 2470 "parser.c"
+#line 2471 "parser.c"
     break;
 
   case 82: /* if_expression: operator_expression comparadors id_number_compression  */
-#line 492 "parser.y"
+#line 493 "parser.y"
                                                         { 
       yyval = new_subtree(get_kind(yyvsp[-1]), VOID_TYPE_, 2, yyvsp[-2], yyvsp[0]);
   }
-#line 2478 "parser.c"
+#line 2479 "parser.c"
     break;
 
   case 83: /* $@15: %empty  */
-#line 499 "parser.y"
+#line 500 "parser.y"
          { 
       last_decl_type = INT_TYPE_; 
       new_var(); 
   }
-#line 2487 "parser.c"
+#line 2488 "parser.c"
     break;
 
   case 84: /* for_statement: FOR ID $@15 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block  */
-#line 502 "parser.y"
+#line 503 "parser.y"
                                                                    {
       // $2: ID (variável), $4: SHORT_ASSIGN, $5: INT_VAL, $6: SEMI, $7: for_comparison, $8: SEMI, $9: for_update, $10: block
 
@@ -2508,36 +2509,36 @@ yyreduce:
       // Nó principal do loop for
       yyval = new_subtree(FOR_NODE, VOID_TYPE_, 4, init_node, cond_node, update_node, body_node);
   }
-#line 2512 "parser.c"
+#line 2513 "parser.c"
     break;
 
   case 85: /* $@16: %empty  */
-#line 526 "parser.y"
+#line 527 "parser.y"
      { 
       check_var();
   }
-#line 2520 "parser.c"
+#line 2521 "parser.c"
     break;
 
   case 86: /* for_comparison: ID $@16 comparadors id_number_compression  */
-#line 528 "parser.y"
+#line 529 "parser.y"
                                       {
       // Cria o nó de comparação entre a variável e a expressão
       yyval = new_subtree(get_kind(yyvsp[-1]), VOID_TYPE_, 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), yyvsp[0]);
   }
-#line 2529 "parser.c"
+#line 2530 "parser.c"
     break;
 
   case 87: /* $@17: %empty  */
-#line 535 "parser.y"
+#line 536 "parser.y"
      { 
       check_var(); 
   }
-#line 2537 "parser.c"
+#line 2538 "parser.c"
     break;
 
   case 88: /* for_update: ID $@17 PLUS_PLUS  */
-#line 537 "parser.y"
+#line 538 "parser.y"
               {
       // Cria um nó para a operação de incremento (i + 1)
       AST *increment_node = new_subtree(PLUS_NODE, INT_TYPE_, 2, 
@@ -2549,19 +2550,19 @@ yyreduce:
             new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
             increment_node);
   }
-#line 2553 "parser.c"
+#line 2554 "parser.c"
     break;
 
   case 89: /* $@18: %empty  */
-#line 548 "parser.y"
+#line 549 "parser.y"
      { 
       check_var(); 
   }
-#line 2561 "parser.c"
+#line 2562 "parser.c"
     break;
 
   case 90: /* for_update: ID $@18 MINUS_MINUS  */
-#line 550 "parser.y"
+#line 551 "parser.y"
                 {
       // Cria um nó para a operação de incremento (i + 1)
       AST *increment_node = new_subtree(MINUS_NODE, INT_TYPE_, 2, 
@@ -2573,92 +2574,92 @@ yyreduce:
             new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
             increment_node);
   }
-#line 2577 "parser.c"
+#line 2578 "parser.c"
     break;
 
   case 91: /* print_operation: PRINTLN LEFT_PARENTESES print_args RIGHT_PARENTESES  */
-#line 564 "parser.y"
+#line 565 "parser.y"
                                                         {
         yyval = new_subtree(WRITE_NODE, VOID_TYPE_, 1, yyvsp[-1]);  // Cria um nó WRITE_NODE na AST
     }
-#line 2585 "parser.c"
+#line 2586 "parser.c"
     break;
 
   case 92: /* print_args: STRING_VAL  */
-#line 570 "parser.y"
+#line 571 "parser.y"
              {
       int str_index = add_string(st, yytext);
       yyval = new_node(STR_VAL_NODE, str_index, STRING_TYPE_);
   }
-#line 2594 "parser.c"
+#line 2595 "parser.c"
     break;
 
   case 93: /* print_args: id_number_compression  */
-#line 574 "parser.y"
+#line 575 "parser.y"
                         { yyval = yyvsp[0]; }
-#line 2600 "parser.c"
+#line 2601 "parser.c"
     break;
 
   case 94: /* print_args: array_printable  */
-#line 575 "parser.y"
+#line 576 "parser.y"
                   { yyval = yyvsp[0]; }
-#line 2606 "parser.c"
+#line 2607 "parser.c"
     break;
 
   case 95: /* scanf_operation: SCANF LEFT_PARENTESES scan_args RIGHT_PARENTESES  */
-#line 631 "parser.y"
+#line 632 "parser.y"
                                                      {
         yyval = yyvsp[-1];
     }
-#line 2614 "parser.c"
+#line 2615 "parser.c"
     break;
 
   case 96: /* scan_args: FORMAT_STRING COMMA ADDRESS ID  */
-#line 637 "parser.y"
+#line 638 "parser.y"
                                  { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, STRING_TYPE_, "%s"); 
       yyval = new_subtree(READ_NODE, STRING_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2625 "parser.c"
+#line 2626 "parser.c"
     break;
 
   case 97: /* scan_args: FORMAT_INT COMMA ADDRESS ID  */
-#line 643 "parser.y"
+#line 644 "parser.y"
                               { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, INT_TYPE_, "%d"); 
       yyval = new_subtree(READ_NODE, INT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2636 "parser.c"
+#line 2637 "parser.c"
     break;
 
   case 98: /* scan_args: FORMAT_FLOAT COMMA ADDRESS ID  */
-#line 649 "parser.y"
+#line 650 "parser.y"
                                 { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, FLOAT_TYPE_, "%g"); 
       yyval = new_subtree(READ_NODE, FLOAT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2647 "parser.c"
+#line 2648 "parser.c"
     break;
 
   case 99: /* scan_args: FORMAT_BOOL COMMA ADDRESS ID  */
-#line 655 "parser.y"
+#line 656 "parser.y"
                                { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
       check_format_type(yylineno, var_type, BOOL_TYPE_, "%t"); 
       yyval = new_subtree(READ_NODE, BOOL_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type));
   }
-#line 2658 "parser.c"
+#line 2659 "parser.c"
     break;
 
   case 100: /* scan_args: scan_args COMMA FORMAT_STRING COMMA ADDRESS ID  */
-#line 661 "parser.y"
+#line 662 "parser.y"
                                                  { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2666,11 +2667,11 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, STRING_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2670 "parser.c"
+#line 2671 "parser.c"
     break;
 
   case 101: /* scan_args: scan_args COMMA FORMAT_INT COMMA ADDRESS ID  */
-#line 668 "parser.y"
+#line 669 "parser.y"
                                               { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2678,11 +2679,11 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, INT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2682 "parser.c"
+#line 2683 "parser.c"
     break;
 
   case 102: /* scan_args: scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID  */
-#line 675 "parser.y"
+#line 676 "parser.y"
                                                 { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2690,11 +2691,11 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, FLOAT_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2694 "parser.c"
+#line 2695 "parser.c"
     break;
 
   case 103: /* scan_args: scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID  */
-#line 682 "parser.y"
+#line 683 "parser.y"
                                                { 
       check_var(); 
       Type var_type = get_type_from_var(yylineno, copied_id, current_scope); 
@@ -2702,125 +2703,125 @@ yyreduce:
       add_child(yyvsp[-5], new_subtree(READ_NODE, BOOL_TYPE_, 1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), var_type)));
       yyval = yyvsp[-5];
   }
-#line 2706 "parser.c"
+#line 2707 "parser.c"
     break;
 
   case 104: /* type_spec: INT_TYPE  */
-#line 692 "parser.y"
+#line 693 "parser.y"
               { last_decl_type = INT_TYPE_; }
-#line 2712 "parser.c"
+#line 2713 "parser.c"
     break;
 
   case 105: /* type_spec: STRING_TYPE  */
-#line 693 "parser.y"
+#line 694 "parser.y"
               { last_decl_type = STRING_TYPE_; }
-#line 2718 "parser.c"
+#line 2719 "parser.c"
     break;
 
   case 106: /* type_spec: FLOAT_TYPE  */
-#line 694 "parser.y"
+#line 695 "parser.y"
               { last_decl_type = FLOAT_TYPE_; }
-#line 2724 "parser.c"
+#line 2725 "parser.c"
     break;
 
   case 107: /* type_spec: BOOL_TYPE  */
-#line 695 "parser.y"
+#line 696 "parser.y"
               { last_decl_type = BOOL_TYPE_; }
-#line 2730 "parser.c"
+#line 2731 "parser.c"
     break;
 
   case 108: /* type_spec: VOID_TYPE  */
-#line 696 "parser.y"
+#line 697 "parser.y"
               { last_decl_type = VOID_TYPE_; }
-#line 2736 "parser.c"
+#line 2737 "parser.c"
     break;
 
   case 109: /* number_val_spec: INT_VAL  */
-#line 700 "parser.y"
+#line 701 "parser.y"
           { yyval = yyvsp[0]; }
-#line 2742 "parser.c"
+#line 2743 "parser.c"
     break;
 
   case 110: /* number_val_spec: FLOAT_VAL  */
-#line 701 "parser.y"
+#line 702 "parser.y"
             { yyval = yyvsp[0]; }
-#line 2748 "parser.c"
+#line 2749 "parser.c"
     break;
 
   case 111: /* comparadors: LESS  */
-#line 705 "parser.y"
+#line 706 "parser.y"
        { yyval = new_node(LESS_NODE, 0, VOID_TYPE_); }
-#line 2754 "parser.c"
+#line 2755 "parser.c"
     break;
 
   case 112: /* comparadors: MORE  */
-#line 706 "parser.y"
+#line 707 "parser.y"
        { yyval = new_node(MORE_NODE, 0, VOID_TYPE_); }
-#line 2760 "parser.c"
+#line 2761 "parser.c"
     break;
 
   case 113: /* comparadors: LESS_EQUAL  */
-#line 707 "parser.y"
+#line 708 "parser.y"
              { yyval = new_node(LESS_EQUAL_NODE, 0, VOID_TYPE_); }
-#line 2766 "parser.c"
+#line 2767 "parser.c"
     break;
 
   case 114: /* comparadors: MORE_EQUAL  */
-#line 708 "parser.y"
+#line 709 "parser.y"
              { yyval = new_node(MORE_EQUAL_NODE, 0, VOID_TYPE_); }
-#line 2772 "parser.c"
+#line 2773 "parser.c"
     break;
 
   case 115: /* comparadors: DIFERS  */
-#line 709 "parser.y"
+#line 710 "parser.y"
          { yyval = new_node(DIFERS_NODE, 0, VOID_TYPE_); }
-#line 2778 "parser.c"
+#line 2779 "parser.c"
     break;
 
   case 116: /* comparadors: NOT  */
-#line 710 "parser.y"
+#line 711 "parser.y"
       { yyval = new_node(NOT_NODE, 0, VOID_TYPE_); }
-#line 2784 "parser.c"
+#line 2785 "parser.c"
     break;
 
   case 117: /* comparadors: EQUALS  */
-#line 711 "parser.y"
+#line 712 "parser.y"
          { yyval = new_node(EQUALS_NODE, 0, VOID_TYPE_); }
-#line 2790 "parser.c"
+#line 2791 "parser.c"
     break;
 
   case 118: /* operators: PLUS  */
-#line 715 "parser.y"
+#line 716 "parser.y"
        { yyval = new_node(PLUS_NODE, 0, VOID_TYPE_); }
-#line 2796 "parser.c"
+#line 2797 "parser.c"
     break;
 
   case 119: /* operators: MINUS  */
-#line 716 "parser.y"
+#line 717 "parser.y"
         { yyval = new_node(MINUS_NODE, 0, VOID_TYPE_); }
-#line 2802 "parser.c"
+#line 2803 "parser.c"
     break;
 
   case 120: /* operators: TIMES  */
-#line 717 "parser.y"
+#line 718 "parser.y"
         { yyval = new_node(TIMES_NODE, 0, VOID_TYPE_); }
-#line 2808 "parser.c"
+#line 2809 "parser.c"
     break;
 
   case 121: /* operators: OVER  */
-#line 718 "parser.y"
+#line 719 "parser.y"
        { yyval = new_node(OVER_NODE, 0, VOID_TYPE_); }
-#line 2814 "parser.c"
+#line 2815 "parser.c"
     break;
 
   case 122: /* operators: REST  */
-#line 719 "parser.y"
+#line 720 "parser.y"
        { yyval = new_node(REST_NODE, 0, VOID_TYPE_); }
-#line 2820 "parser.c"
+#line 2821 "parser.c"
     break;
 
 
-#line 2824 "parser.c"
+#line 2825 "parser.c"
 
         default: break;
       }
@@ -3055,7 +3056,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 722 "parser.y"
+#line 723 "parser.y"
 
 
 void check_array_type(Type array_type, Type expression_type, int line) {

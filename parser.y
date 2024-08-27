@@ -54,6 +54,7 @@ char copied_func_id[128]; //copia o ultimo id de funcao visto
 Type last_decl_type; //tipo mais recente declarado
 
 AST *ast_root = NULL;
+AST* argument_list_root = NULL; 
 %}
 
 %token FLOAT_TYPE_CAST
@@ -199,7 +200,7 @@ statement:
 | ID { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 } LEFT_PARENTESES argument_list_call { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
 } RIGHT_PARENTESES SEMI {
-  $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
+  $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
 } //FUNCTION CALL
 ;
 
@@ -319,7 +320,7 @@ assign_expression :
   } LEFT_PARENTESES argument_list_call { 
       check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
     } RIGHT_PARENTESES {
-        $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(VAR_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
+        $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
       } //FUNCTION CALL
 ;
 

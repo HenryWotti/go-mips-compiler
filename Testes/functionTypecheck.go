@@ -3,9 +3,9 @@ package main
 import "fmt"
 
 func add(x float32, y float32) float32 {
-	var z float32;
-	z = x + y;
-	return z;
+	var b float32;
+	b = x + y;
+	return b;
 }
 
 func add2(x float32, y int) bool {
@@ -26,13 +26,13 @@ func main() {
 	var y float32;
 	var z float32;
 	var somaFloat float32;
-	var str string;
-	var k bool;
+	//var str string;
+	//var k bool;
 	somaFloat = add(y,z);
-	var j bool;
-	noReturn();
-	j = variosArgumentos(7.2,"test",true,7);
-	j = variosArgumentos(y,str,k,x);
+	//var j bool;
+	//noReturn();
+	//j = variosArgumentos(7.2,"test",true,7);
+	//j = variosArgumentos(y,str,k,x);
 
 	/* Erros estão comentados */
 	//somaFloat = add(y,z,x);

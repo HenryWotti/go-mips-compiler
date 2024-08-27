@@ -367,6 +367,7 @@ void free_tree(AST *tree) {
 int nr;
 
 extern VarTable *vt;
+extern FuncTable *ft;
 
 char* kind2str(NodeKind kind) {
     switch(kind) {
@@ -409,7 +410,8 @@ char* kind2str(NodeKind kind) {
         case F2I_NODE:          return "F2I";
         case I2F_NODE:          return "I2F";
         case SHORT_ASSIGN_NODE: return ":=";
-        case ARGUMENT_NODE:     return "arg_node";
+        case ARGUMENT_LIST_NODE:     return "arg_node";
+        case FUNC_USE_NODE:     return "func_use";
         default:                return "ERROR!!";
     }
 }
@@ -437,6 +439,8 @@ int print_node_dot(AST *node) {
     }
     if (node->kind == VAR_DECL_NODE || node->kind == VAR_USE_NODE) {
         fprintf(stderr, "%s@", get_name(vt, node->data.as_int));
+    } else if(node->kind == FUNC_USE_NODE){
+        fprintf(stderr, "%s@", get_func_name(ft, node->data.as_int));
     } else {
         fprintf(stderr, "%s", kind2str(node->kind));
     }
