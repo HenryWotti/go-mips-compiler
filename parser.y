@@ -126,7 +126,7 @@ AST* argument_list_root = NULL;
 
 program:
   package_declaration import_declaration list_func_generic func_main {
-    ast_root = $4;  // Atribui a raiz da AST
+    ast_root = new_subtree(PROGRAM_NODE, VOID_TYPE_, 2, $3, $4);
   }
 ;
 
@@ -147,27 +147,62 @@ func_main :
 
 block :
   LEFT_BRACE statement_list RIGHT_BRACE {
-    $$ = new_subtree(BLOCK_NODE, VOID_TYPE_, 1, $2);
+    $$ = $2;
   }
 ;
 
 list_func_generic:
-  %empty
-| list_func_generic func_generic
+  %empty {
+    $$ = new_node(FUNC_LIST_NODE, 0, VOID_TYPE_); // Cria um nó para armazenar as funções genéricas
+  }
+| list_func_generic func_generic {
+  add_child($1, $2); // Adiciona a função genérica como filho do nó da lista
+  $$ = $1; // Retorna o nó da lista com a função adicionada
+}
 ;
 
 func_generic:
-  FUNC ID { strcpy(copied_func_id, copied_id); current_scope++; current_func_idx = new_func();
-  } LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec { update_func_return_type(ft, current_func_idx, last_decl_type); current_return_type=last_decl_type;
+  FUNC ID { 
+      strcpy(copied_func_id, copied_id); 
+      current_scope++; 
+      current_func_idx = new_func();
+  } LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec { 
+      update_func_return_type(ft, current_func_idx, last_decl_type); 
+      current_return_type = last_decl_type;
   } block { 
-    has_return = 0;
+      has_return = 0;
+      // Cria um nó para a função com o tipo de retorno correto
+      AST* aux_func_tree = new_node(FUNC_USE_NODE, current_func_idx, get_type_from_func(yylineno, copied_func_id));
+      
+      // Adiciona a lista de argumentos como filho
+      add_child(aux_func_tree, $5); // Lista de argumentos (produzida por argument_list)
+      
+      // Adiciona o bloco de código da função como filho
+      add_child(aux_func_tree, $9); // Bloco de função
+      
+      // Define o resultado da produção como o nó da função completa
+      $$ = aux_func_tree;
   }
 ;
 
+
 argument_list:
-  %empty
-| ID type_spec { new_var(); add_param_type(ft, current_func_idx, last_decl_type, yylineno);} comma_expression argument_list
+  %empty {
+    // Cria um nó vazio para representar a lista de argumentos (nenhum argumento)
+    $$ = new_node(ARGUMENT_LIST_NODE, 0, VOID_TYPE_);
+  }
+| argument_list comma_expression ID type_spec { 
+    new_var();
+    add_param_type(ft, current_func_idx, last_decl_type, yylineno);
+    
+    // Adiciona o novo argumento (variável) ao nó da lista de argumentos
+    add_child($1, new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), last_decl_type));
+    
+    // Passa o nó atualizado da lista de argumentos para o próximo estado
+    $$ = $1;
+  }
 ;
+
 
 return_statement:
   RETURN assign_expression { 
@@ -178,7 +213,7 @@ return_statement:
 
 statement_list:
   statement {
-    $$ = new_subtree(STATEMANT_LIST, VOID_TYPE_, 1, $1); 
+    $$ = new_subtree(BLOCK_NODE, VOID_TYPE_, 1, $1); 
   }
 | statement_list statement {
       add_child($1, $2); 

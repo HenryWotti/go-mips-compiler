@@ -159,7 +159,10 @@ typedef enum {
     PROGRAM_NODE,        // Nó raiz do programa
     MAIN_NODE,            // Função principal (main)
     ARGUMENT_LIST_NODE,
-    FUNC_USE_NODE
+    FUNC_USE_NODE,
+    FUNC_DECL_NODE,
+    FUNC_LIST_NODE,
+    FUNC_NODE,
 } NodeKind;
 
 struct node; // Opaque structure to ensure encapsulation.
@@ -189,6 +192,6 @@ int get_child_count(AST *node);
 void print_tree(AST *ast);
 void print_dot(AST *ast);
 
-void free_tree(AST *ast);
+void free_tree(AST *tree);
 
 #endif // TABLES_H

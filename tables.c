@@ -412,6 +412,9 @@ char* kind2str(NodeKind kind) {
         case SHORT_ASSIGN_NODE: return ":=";
         case ARGUMENT_LIST_NODE:     return "arg_node";
         case FUNC_USE_NODE:     return "func_use";
+        case FUNC_DECL_NODE:    return "";
+        case FUNC_LIST_NODE:         return "func_list";
+        case FUNC_NODE:         return "";
         default:                return "ERROR!!";
     }
 }
@@ -441,7 +444,9 @@ int print_node_dot(AST *node) {
         fprintf(stderr, "%s@", get_name(vt, node->data.as_int));
     } else if(node->kind == FUNC_USE_NODE){
         fprintf(stderr, "%s@", get_func_name(ft, node->data.as_int));
-    } else {
+    } /*else if (node->kind == FUNC_DECL_NODE){
+        fprintf(stderr, "%s@", get_func_name(ft, node->data.as_int));
+    } */else {
         fprintf(stderr, "%s", kind2str(node->kind));
     }
     if (has_data(node->kind)) {
