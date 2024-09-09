@@ -32,10 +32,6 @@ func noReturn() void {
     fmt.Println("Voce esta no noReturn");
 }
 
-/* oi tudo bom*/
-
-//tudo sim
-
 func main() {
     var x int;
     x = 20 + 30;

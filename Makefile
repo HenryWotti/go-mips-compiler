@@ -8,8 +8,8 @@ bison: parser.y
 flex: scanner.l
 	flex scanner.l
 
-gcc: scanner.c parser.c
-	gcc -Wall -o trab scanner.c parser.c tables.c types.c
+gcc: scanner.c parser.c tables.c types.c interpreter.c
+	gcc -Wall -o trab scanner.c parser.c tables.c types.c interpreter.c
 
 clean:
-	@rm -f *.o *.output scanner.c parser.h parser.c trab
+	@rm -f *.o *.output scanner.c parser.h parser.c *.dot trab

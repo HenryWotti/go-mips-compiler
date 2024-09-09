@@ -11,6 +11,7 @@
 #include "types.h"
 #include "tables.h"
 #include "parser.h"
+#include "interpreter.h"
 
 int yylex(void);
 int yylex_destroy(void);
@@ -55,6 +56,7 @@ Type last_decl_type; //tipo mais recente declarado
 
 AST *ast_root = NULL;
 AST* argument_list_root = NULL; 
+
 %}
 
 %token FLOAT_TYPE_CAST
@@ -189,7 +191,7 @@ func_generic:
 argument_list:
   %empty {
     // Cria um nó vazio para representar a lista de argumentos (nenhum argumento)
-    $$ = new_node(ARGUMENT_LIST_NODE, 0, VOID_TYPE_);
+    $$ = new_subtree(PARAM_LIST_NODE, VOID_TYPE_, 0);
   }
 | argument_list comma_expression ID type_spec { 
     new_var();
@@ -203,11 +205,35 @@ argument_list:
   }
 ;
 
+argument_list_call:
+  %empty {
+    $$ = new_subtree(ARGUMENT_LIST_NODE, VOID_TYPE_, 0);
+  }
+| argument_list_call comma_expression ID {
+    check_var(); 
+    arg_types[argument_count] = get_type_from_var(yylineno, copied_id, current_scope); 
+    argument_count++;
+    add_child($1, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)));
+    
+    // Passa o nó atualizado da lista de argumentos para o próximo estado
+    $$ = $1;
+}
+| argument_list_call comma_expression argument_val { 
+    arg_types[argument_count] = get_node_type($3); 
+    argument_count++;
+    add_child($1, $3);
+    
+    // Passa o nó atualizado da lista de argumentos para o próximo estado
+    $$ = $1;
+}
+;
+
 
 return_statement:
   RETURN assign_expression { 
     check_return_type(yylineno, current_return_type, get_node_type($2), 1);
     has_return = 1; // Indicar que um return foi encontrado
+    $$ = new_subtree(RETURN_NODE, VOID_TYPE_, 1, $2);
   }
 ;
 
@@ -235,7 +261,9 @@ statement:
 | ID { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
 } LEFT_PARENTESES argument_list_call { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
 } RIGHT_PARENTESES SEMI {
-  $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
+  AST *call_node = new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id));
+  add_child(call_node, $4);
+  $$ = call_node;
 } //FUNCTION CALL
 ;
 
@@ -301,7 +329,7 @@ array_assign :
       idx2 = lookup_var(vt, copied_id, current_scope);
       check_isNotArray(idx2, yylineno);  
   } 
-  LEFT_BRACKET id_int_compression RIGHT_BRACKET ASSIGN assign_expression {
+  LEFT_BRACKET operator_expression RIGHT_BRACKET ASSIGN assign_expression {
     // Verifica se a posição do array é um inteiro
     check_array_position_int(yylineno, get_node_type($4));
     
@@ -350,26 +378,13 @@ assign_expression :
         exit(EXIT_FAILURE);
     }
 }
-| ID {
-    strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
-  } LEFT_PARENTESES argument_list_call { 
-      check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
-    } RIGHT_PARENTESES {
-        $$ = new_subtree(FUNC_CALL_NODE, get_type_from_func(yylineno, copied_func_id), 1, new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id)));
-      } //FUNCTION CALL
-;
-
-argument_list_call:
-  %empty
-| ID { 
-    check_var(); 
-    arg_types[argument_count] = get_type_from_var(yylineno, copied_id, current_scope); 
-    argument_count++; 
-} comma_expression argument_list_call
-| argument_val { 
-    arg_types[argument_count] = get_node_type($1); 
-    argument_count++; 
-} comma_expression argument_list_call
+| ID { strcpy(copied_func_id, copied_id); check_func(); func_idx = lookup_func(ft, copied_func_id);
+} LEFT_PARENTESES argument_list_call { check_func_params(); check_function_argument_types(ft, func_idx, arg_types, argument_count, yylineno); argument_count = 0; 
+} RIGHT_PARENTESES {
+  AST *call_node = new_node(FUNC_USE_NODE, func_idx, get_type_from_func(yylineno, copied_func_id));
+  add_child(call_node, $4);
+  $$ = call_node;
+} //FUNCTION CALL
 ;
 
 argument_val:
@@ -904,6 +919,18 @@ int main() {
     print_str_table(st); printf("\n\n");
     print_var_table(vt); printf("\n\n"); // Print the entire variable table
     print_func_table(ft); // Print the functions table
+
+    // Redireciona stdin para o console no Windows ou usa ctermid para Linux/macOS
+    #ifdef _WIN32
+        freopen("CON", "r", stdin);  // Reabre o console no Windows
+    #else
+        stdin = fopen(ctermid(NULL), "r");  // Para Linux/macOS
+    #endif
+
+    // Executa o interpretador
+    run_ast(ast_root);
+    // Fecha stdin
+    fclose(stdin);
 
     free_str_table(st);
     free_var_table(vt); // Free the variable table

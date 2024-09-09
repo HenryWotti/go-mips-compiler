@@ -24,16 +24,4 @@ func main() {
 	y = 6.8 + 3.2;
 
 	x = z + y;
-
-	x = 7.5 + float32(h);
-
-	x = 3.53 + 6.78;
-
-	w = false;
-
-	w = true;
-
-	h = int(y) + 2;
-
-	h = int(y) + int(z);
 }
