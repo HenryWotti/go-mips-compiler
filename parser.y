@@ -305,7 +305,7 @@ array_printable:
       strcpy(copied_id_array, copied_id);
       //$$ = new_node(VAR_USE_NODE, var_idx, get_type_from_var(yylineno, copied_id, current_scope)); 
   } 
-  LEFT_BRACKET id_int_compression RIGHT_BRACKET {
+  LEFT_BRACKET operator_expression RIGHT_BRACKET {
     check_array_position_int(yylineno, get_node_type($4));
     $$ = new_subtree(ARRAY_ACCESS_NODE, get_type_from_var(yylineno, copied_id_array, current_scope), 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id_array, current_scope), get_type_from_var(yylineno, copied_id_array, current_scope)), $4);
   }
@@ -344,7 +344,7 @@ array_assign :
   }
 ;
 
-
+/*
 id_int_compression:
   ID { 
       check_var(); 
@@ -354,7 +354,7 @@ id_int_compression:
 | INT_VAL { 
       $$ = $1;
   }
-;
+;*/
 
 assign_expression :
   string_list { $$ = $1; }

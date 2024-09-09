@@ -1,0 +1,2557 @@
+Terminals unused in grammar
+
+    AND
+    OR
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: package_declaration import_declaration list_func_generic func_main
+
+    2 package_declaration: PACKAGE MAIN
+
+    3 import_declaration: ε
+
+    4 $@1: ε
+
+    5 import_declaration: IMPORT STRING_VAL $@1 import_declaration
+
+    6 $@2: ε
+
+    7 func_main: FUNC MAIN $@2 LEFT_PARENTESES RIGHT_PARENTESES block
+
+    8 block: LEFT_BRACE statement_list RIGHT_BRACE
+
+    9 list_func_generic: ε
+   10                  | list_func_generic func_generic
+
+   11 $@3: ε
+
+   12 $@4: ε
+
+   13 func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block
+
+   14 argument_list: ε
+   15              | argument_list comma_expression ID type_spec
+
+   16 argument_list_call: ε
+   17                   | argument_list_call comma_expression ID
+   18                   | argument_list_call comma_expression argument_val
+
+   19 return_statement: RETURN assign_expression
+
+   20 statement_list: statement
+   21               | statement_list statement
+
+   22 statement: if_statement
+   23          | for_statement
+   24          | assign_val SEMI
+   25          | val_declaration SEMI
+   26          | array_declaration SEMI
+   27          | array_assign SEMI
+   28          | print_operation SEMI
+   29          | scanf_operation SEMI
+   30          | string_list
+   31          | return_statement SEMI
+
+   32 $@5: ε
+
+   33 $@6: ε
+
+   34 statement: ID $@5 LEFT_PARENTESES argument_list_call $@6 RIGHT_PARENTESES SEMI
+
+   35 string_list: STRING_VAL
+   36            | string_list COMMA STRING_VAL
+
+   37 val_declaration: VAR ID type_spec
+
+   38 $@7: ε
+
+   39 assign_val: ID $@7 ASSIGN assign_expression
+
+   40 $@8: ε
+
+   41 array_printable: ID $@8 LEFT_BRACKET operator_expression RIGHT_BRACKET
+
+   42 array_declaration: VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec
+
+   43 $@9: ε
+
+   44 array_assign: ID $@9 LEFT_BRACKET operator_expression RIGHT_BRACKET ASSIGN assign_expression
+
+   45 assign_expression: string_list
+   46                  | id_number_compression
+   47                  | operator_expression
+   48                  | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   49                  | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+   50 $@10: ε
+
+   51 $@11: ε
+
+   52 assign_expression: ID $@10 LEFT_PARENTESES argument_list_call $@11 RIGHT_PARENTESES
+
+   53 argument_val: STRING_VAL
+   54             | BOOL_VAL
+   55             | INT_VAL
+   56             | FLOAT_VAL
+
+   57 comma_expression: ε
+   58                 | COMMA
+
+   59 operator_expression: id_number_compression operators id_number_compression
+   60                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression
+   61                    | id_number_compression operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   62                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression
+   63                    | id_number_compression operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   64                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   65                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+   68 id_number_compression: ID
+   69                      | number_val_spec
+   70                      | BOOL_VAL
+
+   71 if_statement: IF if_expression block
+   72             | IF if_expression block ELSE block
+
+   73 if_expression: ID
+   74              | BOOL_VAL
+   75              | id_number_compression comparadors id_number_compression
+   76              | operator_expression comparadors id_number_compression
+
+   77 $@12: ε
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block
+
+   79 $@13: ε
+
+   80 for_comparison: ID $@13 comparadors id_number_compression
+
+   81 $@14: ε
+
+   82 for_update: ID $@14 PLUS_PLUS
+
+   83 $@15: ε
+
+   84 for_update: ID $@15 MINUS_MINUS
+
+   85 print_operation: PRINTLN LEFT_PARENTESES print_args RIGHT_PARENTESES
+
+   86 print_args: STRING_VAL
+   87           | id_number_compression
+   88           | array_printable
+
+   89 scanf_operation: SCANF LEFT_PARENTESES scan_args RIGHT_PARENTESES
+
+   90 scan_args: FORMAT_STRING COMMA ADDRESS ID
+   91          | FORMAT_INT COMMA ADDRESS ID
+   92          | FORMAT_FLOAT COMMA ADDRESS ID
+   93          | FORMAT_BOOL COMMA ADDRESS ID
+   94          | scan_args COMMA FORMAT_STRING COMMA ADDRESS ID
+   95          | scan_args COMMA FORMAT_INT COMMA ADDRESS ID
+   96          | scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID
+   97          | scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID
+
+   98 type_spec: INT_TYPE
+   99          | STRING_TYPE
+  100          | FLOAT_TYPE
+  101          | BOOL_TYPE
+  102          | VOID_TYPE
+
+  103 number_val_spec: INT_VAL
+  104                | FLOAT_VAL
+
+  105 comparadors: LESS
+  106            | MORE
+  107            | LESS_EQUAL
+  108            | MORE_EQUAL
+  109            | DIFERS
+  110            | NOT
+  111            | EQUALS
+
+  112 operators: PLUS
+  113          | MINUS
+  114          | TIMES
+  115          | OVER
+  116          | REST
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    FLOAT_TYPE_CAST (258) 49 62 63 64 65 67
+    INT_TYPE_CAST (259) 48 60 61 64 65 66
+    STRING_VAL (260) 5 35 36 53 86
+    ELSE (261) 72
+    FOR (262) 78
+    FUNC (263) 7 13
+    IF (264) 71 72
+    PACKAGE (265) 2
+    IMPORT (266) 5
+    RETURN (267) 19
+    VAR (268) 37 42
+    INT_TYPE (269) 98
+    FLOAT_TYPE (270) 100
+    STRING_TYPE (271) 99
+    VOID_TYPE (272) 102
+    BOOL_TYPE (273) 101
+    PLUS_PLUS (274) 82
+    PLUS (275) 112
+    MINUS_MINUS (276) 84
+    MINUS (277) 113
+    TIMES (278) 114
+    OVER (279) 115
+    REST (280) 116
+    AND (281)
+    OR (282)
+    EQUALS (283) 111
+    LESS_EQUAL (284) 107
+    MORE_EQUAL (285) 108
+    LESS (286) 105
+    MORE (287) 106
+    DIFERS (288) 109
+    NOT (289) 110
+    LEFT_PARENTESES (290) 7 13 34 52 85 89
+    RIGHT_PARENTESES (291) 7 13 34 48 49 52 60 61 62 63 64 65 66 67 85 89
+    LEFT_BRACKET (292) 41 42 44
+    RIGHT_BRACKET (293) 41 42 44
+    LEFT_BRACE (294) 8
+    RIGHT_BRACE (295) 8
+    FLOAT_VAL (296) 56 104
+    INT_VAL (297) 42 55 78 103
+    BOOL_VAL (298) 54 70 74
+    ID (299) 13 15 17 34 37 39 41 42 44 52 68 73 78 80 82 84 90 91 92 93 94 95 96 97
+    SHORT_ASSIGN (300) 78
+    ASSIGN (301) 39 44
+    SEMI (302) 24 25 26 27 28 29 31 34 78
+    ADDRESS (303) 90 91 92 93 94 95 96 97
+    COMMA (304) 36 58 90 91 92 93 94 95 96 97
+    MAIN (305) 2 7
+    PRINTLN (306) 85
+    SCANF (307) 89
+    FORMAT_STRING (308) 90 94
+    FORMAT_INT (309) 91 95
+    FORMAT_FLOAT (310) 92 96
+    FORMAT_BOOL (311) 93 97
+    IFX (312)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (58)
+        on left: 0
+    program (59)
+        on left: 1
+        on right: 0
+    package_declaration (60)
+        on left: 2
+        on right: 1
+    import_declaration (61)
+        on left: 3 5
+        on right: 1 5
+    $@1 (62)
+        on left: 4
+        on right: 5
+    func_main (63)
+        on left: 7
+        on right: 1
+    $@2 (64)
+        on left: 6
+        on right: 7
+    block (65)
+        on left: 8
+        on right: 7 13 71 72 78
+    list_func_generic (66)
+        on left: 9 10
+        on right: 1 10
+    func_generic (67)
+        on left: 13
+        on right: 10
+    $@3 (68)
+        on left: 11
+        on right: 13
+    $@4 (69)
+        on left: 12
+        on right: 13
+    argument_list (70)
+        on left: 14 15
+        on right: 13 15
+    argument_list_call (71)
+        on left: 16 17 18
+        on right: 17 18 34 52
+    return_statement (72)
+        on left: 19
+        on right: 31
+    statement_list (73)
+        on left: 20 21
+        on right: 8 21
+    statement (74)
+        on left: 22 23 24 25 26 27 28 29 30 31 34
+        on right: 20 21
+    $@5 (75)
+        on left: 32
+        on right: 34
+    $@6 (76)
+        on left: 33
+        on right: 34
+    string_list (77)
+        on left: 35 36
+        on right: 30 36 45
+    val_declaration (78)
+        on left: 37
+        on right: 25
+    assign_val (79)
+        on left: 39
+        on right: 24
+    $@7 (80)
+        on left: 38
+        on right: 39
+    array_printable (81)
+        on left: 41
+        on right: 88
+    $@8 (82)
+        on left: 40
+        on right: 41
+    array_declaration (83)
+        on left: 42
+        on right: 26
+    array_assign (84)
+        on left: 44
+        on right: 27
+    $@9 (85)
+        on left: 43
+        on right: 44
+    assign_expression (86)
+        on left: 45 46 47 48 49 52
+        on right: 19 39 44
+    $@10 (87)
+        on left: 50
+        on right: 52
+    $@11 (88)
+        on left: 51
+        on right: 52
+    argument_val (89)
+        on left: 53 54 55 56
+        on right: 18
+    comma_expression (90)
+        on left: 57 58
+        on right: 15 17 18
+    operator_expression (91)
+        on left: 59 60 61 62 63 64 65 66 67
+        on right: 41 44 47 76
+    id_number_compression (92)
+        on left: 68 69 70
+        on right: 46 48 49 59 60 61 62 63 64 65 66 67 75 76 80 87
+    if_statement (93)
+        on left: 71 72
+        on right: 22
+    if_expression (94)
+        on left: 73 74 75 76
+        on right: 71 72
+    for_statement (95)
+        on left: 78
+        on right: 23
+    $@12 (96)
+        on left: 77
+        on right: 78
+    for_comparison (97)
+        on left: 80
+        on right: 78
+    $@13 (98)
+        on left: 79
+        on right: 80
+    for_update (99)
+        on left: 82 84
+        on right: 78
+    $@14 (100)
+        on left: 81
+        on right: 82
+    $@15 (101)
+        on left: 83
+        on right: 84
+    print_operation (102)
+        on left: 85
+        on right: 28
+    print_args (103)
+        on left: 86 87 88
+        on right: 85
+    scanf_operation (104)
+        on left: 89
+        on right: 29
+    scan_args (105)
+        on left: 90 91 92 93 94 95 96 97
+        on right: 89 94 95 96 97
+    type_spec (106)
+        on left: 98 99 100 101 102
+        on right: 13 15 37 42
+    number_val_spec (107)
+        on left: 103 104
+        on right: 69
+    comparadors (108)
+        on left: 105 106 107 108 109 110 111
+        on right: 75 76 80
+    operators (109)
+        on left: 112 113 114 115 116
+        on right: 59 60 61 62 63 64 65 66 67
+
+
+State 0
+
+    0 $accept: • program $end
+
+    PACKAGE  shift, and go to state 1
+
+    program              go to state 2
+    package_declaration  go to state 3
+
+
+State 1
+
+    2 package_declaration: PACKAGE • MAIN
+
+    MAIN  shift, and go to state 4
+
+
+State 2
+
+    0 $accept: program • $end
+
+    $end  shift, and go to state 5
+
+
+State 3
+
+    1 program: package_declaration • import_declaration list_func_generic func_main
+
+    IMPORT  shift, and go to state 6
+
+    $default  reduce using rule 3 (import_declaration)
+
+    import_declaration  go to state 7
+
+
+State 4
+
+    2 package_declaration: PACKAGE MAIN •
+
+    $default  reduce using rule 2 (package_declaration)
+
+
+State 5
+
+    0 $accept: program $end •
+
+    $default  accept
+
+
+State 6
+
+    5 import_declaration: IMPORT • STRING_VAL $@1 import_declaration
+
+    STRING_VAL  shift, and go to state 8
+
+
+State 7
+
+    1 program: package_declaration import_declaration • list_func_generic func_main
+
+    $default  reduce using rule 9 (list_func_generic)
+
+    list_func_generic  go to state 9
+
+
+State 8
+
+    5 import_declaration: IMPORT STRING_VAL • $@1 import_declaration
+
+    $default  reduce using rule 4 ($@1)
+
+    $@1  go to state 10
+
+
+State 9
+
+    1 program: package_declaration import_declaration list_func_generic • func_main
+   10 list_func_generic: list_func_generic • func_generic
+
+    FUNC  shift, and go to state 11
+
+    func_main     go to state 12
+    func_generic  go to state 13
+
+
+State 10
+
+    5 import_declaration: IMPORT STRING_VAL $@1 • import_declaration
+
+    IMPORT  shift, and go to state 6
+
+    $default  reduce using rule 3 (import_declaration)
+
+    import_declaration  go to state 14
+
+
+State 11
+
+    7 func_main: FUNC • MAIN $@2 LEFT_PARENTESES RIGHT_PARENTESES block
+   13 func_generic: FUNC • ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block
+
+    ID    shift, and go to state 15
+    MAIN  shift, and go to state 16
+
+
+State 12
+
+    1 program: package_declaration import_declaration list_func_generic func_main •
+
+    $default  reduce using rule 1 (program)
+
+
+State 13
+
+   10 list_func_generic: list_func_generic func_generic •
+
+    $default  reduce using rule 10 (list_func_generic)
+
+
+State 14
+
+    5 import_declaration: IMPORT STRING_VAL $@1 import_declaration •
+
+    $default  reduce using rule 5 (import_declaration)
+
+
+State 15
+
+   13 func_generic: FUNC ID • $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block
+
+    $default  reduce using rule 11 ($@3)
+
+    $@3  go to state 17
+
+
+State 16
+
+    7 func_main: FUNC MAIN • $@2 LEFT_PARENTESES RIGHT_PARENTESES block
+
+    $default  reduce using rule 6 ($@2)
+
+    $@2  go to state 18
+
+
+State 17
+
+   13 func_generic: FUNC ID $@3 • LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block
+
+    LEFT_PARENTESES  shift, and go to state 19
+
+
+State 18
+
+    7 func_main: FUNC MAIN $@2 • LEFT_PARENTESES RIGHT_PARENTESES block
+
+    LEFT_PARENTESES  shift, and go to state 20
+
+
+State 19
+
+   13 func_generic: FUNC ID $@3 LEFT_PARENTESES • argument_list RIGHT_PARENTESES type_spec $@4 block
+
+    $default  reduce using rule 14 (argument_list)
+
+    argument_list  go to state 21
+
+
+State 20
+
+    7 func_main: FUNC MAIN $@2 LEFT_PARENTESES • RIGHT_PARENTESES block
+
+    RIGHT_PARENTESES  shift, and go to state 22
+
+
+State 21
+
+   13 func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list • RIGHT_PARENTESES type_spec $@4 block
+   15 argument_list: argument_list • comma_expression ID type_spec
+
+    RIGHT_PARENTESES  shift, and go to state 23
+    COMMA             shift, and go to state 24
+
+    $default  reduce using rule 57 (comma_expression)
+
+    comma_expression  go to state 25
+
+
+State 22
+
+    7 func_main: FUNC MAIN $@2 LEFT_PARENTESES RIGHT_PARENTESES • block
+
+    LEFT_BRACE  shift, and go to state 26
+
+    block  go to state 27
+
+
+State 23
+
+   13 func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES • type_spec $@4 block
+
+    INT_TYPE     shift, and go to state 28
+    FLOAT_TYPE   shift, and go to state 29
+    STRING_TYPE  shift, and go to state 30
+    VOID_TYPE    shift, and go to state 31
+    BOOL_TYPE    shift, and go to state 32
+
+    type_spec  go to state 33
+
+
+State 24
+
+   58 comma_expression: COMMA •
+
+    $default  reduce using rule 58 (comma_expression)
+
+
+State 25
+
+   15 argument_list: argument_list comma_expression • ID type_spec
+
+    ID  shift, and go to state 34
+
+
+State 26
+
+    8 block: LEFT_BRACE • statement_list RIGHT_BRACE
+
+    STRING_VAL  shift, and go to state 35
+    FOR         shift, and go to state 36
+    IF          shift, and go to state 37
+    RETURN      shift, and go to state 38
+    VAR         shift, and go to state 39
+    ID          shift, and go to state 40
+    PRINTLN     shift, and go to state 41
+    SCANF       shift, and go to state 42
+
+    return_statement   go to state 43
+    statement_list     go to state 44
+    statement          go to state 45
+    string_list        go to state 46
+    val_declaration    go to state 47
+    assign_val         go to state 48
+    array_declaration  go to state 49
+    array_assign       go to state 50
+    if_statement       go to state 51
+    for_statement      go to state 52
+    print_operation    go to state 53
+    scanf_operation    go to state 54
+
+
+State 27
+
+    7 func_main: FUNC MAIN $@2 LEFT_PARENTESES RIGHT_PARENTESES block •
+
+    $default  reduce using rule 7 (func_main)
+
+
+State 28
+
+   98 type_spec: INT_TYPE •
+
+    $default  reduce using rule 98 (type_spec)
+
+
+State 29
+
+  100 type_spec: FLOAT_TYPE •
+
+    $default  reduce using rule 100 (type_spec)
+
+
+State 30
+
+   99 type_spec: STRING_TYPE •
+
+    $default  reduce using rule 99 (type_spec)
+
+
+State 31
+
+  102 type_spec: VOID_TYPE •
+
+    $default  reduce using rule 102 (type_spec)
+
+
+State 32
+
+  101 type_spec: BOOL_TYPE •
+
+    $default  reduce using rule 101 (type_spec)
+
+
+State 33
+
+   13 func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec • $@4 block
+
+    $default  reduce using rule 12 ($@4)
+
+    $@4  go to state 55
+
+
+State 34
+
+   15 argument_list: argument_list comma_expression ID • type_spec
+
+    INT_TYPE     shift, and go to state 28
+    FLOAT_TYPE   shift, and go to state 29
+    STRING_TYPE  shift, and go to state 30
+    VOID_TYPE    shift, and go to state 31
+    BOOL_TYPE    shift, and go to state 32
+
+    type_spec  go to state 56
+
+
+State 35
+
+   35 string_list: STRING_VAL •
+
+    $default  reduce using rule 35 (string_list)
+
+
+State 36
+
+   78 for_statement: FOR • ID $@12 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block
+
+    ID  shift, and go to state 57
+
+
+State 37
+
+   71 if_statement: IF • if_expression block
+   72             | IF • if_expression block ELSE block
+
+    FLOAT_TYPE_CAST  shift, and go to state 58
+    INT_TYPE_CAST    shift, and go to state 59
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 62
+    ID               shift, and go to state 63
+
+    operator_expression    go to state 64
+    id_number_compression  go to state 65
+    if_expression          go to state 66
+    number_val_spec        go to state 67
+
+
+State 38
+
+   19 return_statement: RETURN • assign_expression
+
+    FLOAT_TYPE_CAST  shift, and go to state 68
+    INT_TYPE_CAST    shift, and go to state 69
+    STRING_VAL       shift, and go to state 35
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 71
+
+    string_list            go to state 72
+    assign_expression      go to state 73
+    operator_expression    go to state 74
+    id_number_compression  go to state 75
+    number_val_spec        go to state 67
+
+
+State 39
+
+   37 val_declaration: VAR • ID type_spec
+   42 array_declaration: VAR • ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec
+
+    ID  shift, and go to state 76
+
+
+State 40
+
+   34 statement: ID • $@5 LEFT_PARENTESES argument_list_call $@6 RIGHT_PARENTESES SEMI
+   39 assign_val: ID • $@7 ASSIGN assign_expression
+   44 array_assign: ID • $@9 LEFT_BRACKET operator_expression RIGHT_BRACKET ASSIGN assign_expression
+
+    LEFT_BRACKET  reduce using rule 43 ($@9)
+    ASSIGN        reduce using rule 38 ($@7)
+    $default      reduce using rule 32 ($@5)
+
+    $@5  go to state 77
+    $@7  go to state 78
+    $@9  go to state 79
+
+
+State 41
+
+   85 print_operation: PRINTLN • LEFT_PARENTESES print_args RIGHT_PARENTESES
+
+    LEFT_PARENTESES  shift, and go to state 80
+
+
+State 42
+
+   89 scanf_operation: SCANF • LEFT_PARENTESES scan_args RIGHT_PARENTESES
+
+    LEFT_PARENTESES  shift, and go to state 81
+
+
+State 43
+
+   31 statement: return_statement • SEMI
+
+    SEMI  shift, and go to state 82
+
+
+State 44
+
+    8 block: LEFT_BRACE statement_list • RIGHT_BRACE
+   21 statement_list: statement_list • statement
+
+    STRING_VAL   shift, and go to state 35
+    FOR          shift, and go to state 36
+    IF           shift, and go to state 37
+    RETURN       shift, and go to state 38
+    VAR          shift, and go to state 39
+    RIGHT_BRACE  shift, and go to state 83
+    ID           shift, and go to state 40
+    PRINTLN      shift, and go to state 41
+    SCANF        shift, and go to state 42
+
+    return_statement   go to state 43
+    statement          go to state 84
+    string_list        go to state 46
+    val_declaration    go to state 47
+    assign_val         go to state 48
+    array_declaration  go to state 49
+    array_assign       go to state 50
+    if_statement       go to state 51
+    for_statement      go to state 52
+    print_operation    go to state 53
+    scanf_operation    go to state 54
+
+
+State 45
+
+   20 statement_list: statement •
+
+    $default  reduce using rule 20 (statement_list)
+
+
+State 46
+
+   30 statement: string_list •
+   36 string_list: string_list • COMMA STRING_VAL
+
+    COMMA  shift, and go to state 85
+
+    $default  reduce using rule 30 (statement)
+
+
+State 47
+
+   25 statement: val_declaration • SEMI
+
+    SEMI  shift, and go to state 86
+
+
+State 48
+
+   24 statement: assign_val • SEMI
+
+    SEMI  shift, and go to state 87
+
+
+State 49
+
+   26 statement: array_declaration • SEMI
+
+    SEMI  shift, and go to state 88
+
+
+State 50
+
+   27 statement: array_assign • SEMI
+
+    SEMI  shift, and go to state 89
+
+
+State 51
+
+   22 statement: if_statement •
+
+    $default  reduce using rule 22 (statement)
+
+
+State 52
+
+   23 statement: for_statement •
+
+    $default  reduce using rule 23 (statement)
+
+
+State 53
+
+   28 statement: print_operation • SEMI
+
+    SEMI  shift, and go to state 90
+
+
+State 54
+
+   29 statement: scanf_operation • SEMI
+
+    SEMI  shift, and go to state 91
+
+
+State 55
+
+   13 func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 • block
+
+    LEFT_BRACE  shift, and go to state 26
+
+    block  go to state 92
+
+
+State 56
+
+   15 argument_list: argument_list comma_expression ID type_spec •
+
+    $default  reduce using rule 15 (argument_list)
+
+
+State 57
+
+   78 for_statement: FOR ID • $@12 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block
+
+    $default  reduce using rule 77 ($@12)
+
+    $@12  go to state 93
+
+
+State 58
+
+   62 operator_expression: FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators id_number_compression
+   65                    | FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 95
+    number_val_spec        go to state 67
+
+
+State 59
+
+   60 operator_expression: INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators id_number_compression
+   64                    | INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 96
+    number_val_spec        go to state 67
+
+
+State 60
+
+  104 number_val_spec: FLOAT_VAL •
+
+    $default  reduce using rule 104 (number_val_spec)
+
+
+State 61
+
+  103 number_val_spec: INT_VAL •
+
+    $default  reduce using rule 103 (number_val_spec)
+
+
+State 62
+
+   70 id_number_compression: BOOL_VAL •
+   74 if_expression: BOOL_VAL •
+
+    LEFT_BRACE  reduce using rule 74 (if_expression)
+    $default    reduce using rule 70 (id_number_compression)
+
+
+State 63
+
+   68 id_number_compression: ID •
+   73 if_expression: ID •
+
+    LEFT_BRACE  reduce using rule 73 (if_expression)
+    $default    reduce using rule 68 (id_number_compression)
+
+
+State 64
+
+   76 if_expression: operator_expression • comparadors id_number_compression
+
+    EQUALS      shift, and go to state 97
+    LESS_EQUAL  shift, and go to state 98
+    MORE_EQUAL  shift, and go to state 99
+    LESS        shift, and go to state 100
+    MORE        shift, and go to state 101
+    DIFERS      shift, and go to state 102
+    NOT         shift, and go to state 103
+
+    comparadors  go to state 104
+
+
+State 65
+
+   59 operator_expression: id_number_compression • operators id_number_compression
+   61                    | id_number_compression • operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   63                    | id_number_compression • operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   75 if_expression: id_number_compression • comparadors id_number_compression
+
+    PLUS        shift, and go to state 105
+    MINUS       shift, and go to state 106
+    TIMES       shift, and go to state 107
+    OVER        shift, and go to state 108
+    REST        shift, and go to state 109
+    EQUALS      shift, and go to state 97
+    LESS_EQUAL  shift, and go to state 98
+    MORE_EQUAL  shift, and go to state 99
+    LESS        shift, and go to state 100
+    MORE        shift, and go to state 101
+    DIFERS      shift, and go to state 102
+    NOT         shift, and go to state 103
+
+    comparadors  go to state 110
+    operators    go to state 111
+
+
+State 66
+
+   71 if_statement: IF if_expression • block
+   72             | IF if_expression • block ELSE block
+
+    LEFT_BRACE  shift, and go to state 26
+
+    block  go to state 112
+
+
+State 67
+
+   69 id_number_compression: number_val_spec •
+
+    $default  reduce using rule 69 (id_number_compression)
+
+
+State 68
+
+   49 assign_expression: FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+   62 operator_expression: FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators id_number_compression
+   65                    | FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 113
+    number_val_spec        go to state 67
+
+
+State 69
+
+   48 assign_expression: INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+   60 operator_expression: INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators id_number_compression
+   64                    | INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 114
+    number_val_spec        go to state 67
+
+
+State 70
+
+   70 id_number_compression: BOOL_VAL •
+
+    $default  reduce using rule 70 (id_number_compression)
+
+
+State 71
+
+   52 assign_expression: ID • $@10 LEFT_PARENTESES argument_list_call $@11 RIGHT_PARENTESES
+   68 id_number_compression: ID •
+
+    LEFT_PARENTESES  reduce using rule 50 ($@10)
+    $default         reduce using rule 68 (id_number_compression)
+
+    $@10  go to state 115
+
+
+State 72
+
+   36 string_list: string_list • COMMA STRING_VAL
+   45 assign_expression: string_list •
+
+    COMMA  shift, and go to state 85
+
+    $default  reduce using rule 45 (assign_expression)
+
+
+State 73
+
+   19 return_statement: RETURN assign_expression •
+
+    $default  reduce using rule 19 (return_statement)
+
+
+State 74
+
+   47 assign_expression: operator_expression •
+
+    $default  reduce using rule 47 (assign_expression)
+
+
+State 75
+
+   46 assign_expression: id_number_compression •
+   59 operator_expression: id_number_compression • operators id_number_compression
+   61                    | id_number_compression • operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   63                    | id_number_compression • operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    PLUS   shift, and go to state 105
+    MINUS  shift, and go to state 106
+    TIMES  shift, and go to state 107
+    OVER   shift, and go to state 108
+    REST   shift, and go to state 109
+
+    $default  reduce using rule 46 (assign_expression)
+
+    operators  go to state 111
+
+
+State 76
+
+   37 val_declaration: VAR ID • type_spec
+   42 array_declaration: VAR ID • LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec
+
+    INT_TYPE      shift, and go to state 28
+    FLOAT_TYPE    shift, and go to state 29
+    STRING_TYPE   shift, and go to state 30
+    VOID_TYPE     shift, and go to state 31
+    BOOL_TYPE     shift, and go to state 32
+    LEFT_BRACKET  shift, and go to state 116
+
+    type_spec  go to state 117
+
+
+State 77
+
+   34 statement: ID $@5 • LEFT_PARENTESES argument_list_call $@6 RIGHT_PARENTESES SEMI
+
+    LEFT_PARENTESES  shift, and go to state 118
+
+
+State 78
+
+   39 assign_val: ID $@7 • ASSIGN assign_expression
+
+    ASSIGN  shift, and go to state 119
+
+
+State 79
+
+   44 array_assign: ID $@9 • LEFT_BRACKET operator_expression RIGHT_BRACKET ASSIGN assign_expression
+
+    LEFT_BRACKET  shift, and go to state 120
+
+
+State 80
+
+   85 print_operation: PRINTLN LEFT_PARENTESES • print_args RIGHT_PARENTESES
+
+    STRING_VAL  shift, and go to state 121
+    FLOAT_VAL   shift, and go to state 60
+    INT_VAL     shift, and go to state 61
+    BOOL_VAL    shift, and go to state 70
+    ID          shift, and go to state 122
+
+    array_printable        go to state 123
+    id_number_compression  go to state 124
+    print_args             go to state 125
+    number_val_spec        go to state 67
+
+
+State 81
+
+   89 scanf_operation: SCANF LEFT_PARENTESES • scan_args RIGHT_PARENTESES
+
+    FORMAT_STRING  shift, and go to state 126
+    FORMAT_INT     shift, and go to state 127
+    FORMAT_FLOAT   shift, and go to state 128
+    FORMAT_BOOL    shift, and go to state 129
+
+    scan_args  go to state 130
+
+
+State 82
+
+   31 statement: return_statement SEMI •
+
+    $default  reduce using rule 31 (statement)
+
+
+State 83
+
+    8 block: LEFT_BRACE statement_list RIGHT_BRACE •
+
+    $default  reduce using rule 8 (block)
+
+
+State 84
+
+   21 statement_list: statement_list statement •
+
+    $default  reduce using rule 21 (statement_list)
+
+
+State 85
+
+   36 string_list: string_list COMMA • STRING_VAL
+
+    STRING_VAL  shift, and go to state 131
+
+
+State 86
+
+   25 statement: val_declaration SEMI •
+
+    $default  reduce using rule 25 (statement)
+
+
+State 87
+
+   24 statement: assign_val SEMI •
+
+    $default  reduce using rule 24 (statement)
+
+
+State 88
+
+   26 statement: array_declaration SEMI •
+
+    $default  reduce using rule 26 (statement)
+
+
+State 89
+
+   27 statement: array_assign SEMI •
+
+    $default  reduce using rule 27 (statement)
+
+
+State 90
+
+   28 statement: print_operation SEMI •
+
+    $default  reduce using rule 28 (statement)
+
+
+State 91
+
+   29 statement: scanf_operation SEMI •
+
+    $default  reduce using rule 29 (statement)
+
+
+State 92
+
+   13 func_generic: FUNC ID $@3 LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec $@4 block •
+
+    $default  reduce using rule 13 (func_generic)
+
+
+State 93
+
+   78 for_statement: FOR ID $@12 • SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block
+
+    SHORT_ASSIGN  shift, and go to state 132
+
+
+State 94
+
+   68 id_number_compression: ID •
+
+    $default  reduce using rule 68 (id_number_compression)
+
+
+State 95
+
+   62 operator_expression: FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators id_number_compression
+   65                    | FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 133
+
+
+State 96
+
+   60 operator_expression: INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators id_number_compression
+   64                    | INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 134
+
+
+State 97
+
+  111 comparadors: EQUALS •
+
+    $default  reduce using rule 111 (comparadors)
+
+
+State 98
+
+  107 comparadors: LESS_EQUAL •
+
+    $default  reduce using rule 107 (comparadors)
+
+
+State 99
+
+  108 comparadors: MORE_EQUAL •
+
+    $default  reduce using rule 108 (comparadors)
+
+
+State 100
+
+  105 comparadors: LESS •
+
+    $default  reduce using rule 105 (comparadors)
+
+
+State 101
+
+  106 comparadors: MORE •
+
+    $default  reduce using rule 106 (comparadors)
+
+
+State 102
+
+  109 comparadors: DIFERS •
+
+    $default  reduce using rule 109 (comparadors)
+
+
+State 103
+
+  110 comparadors: NOT •
+
+    $default  reduce using rule 110 (comparadors)
+
+
+State 104
+
+   76 if_expression: operator_expression comparadors • id_number_compression
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 135
+    number_val_spec        go to state 67
+
+
+State 105
+
+  112 operators: PLUS •
+
+    $default  reduce using rule 112 (operators)
+
+
+State 106
+
+  113 operators: MINUS •
+
+    $default  reduce using rule 113 (operators)
+
+
+State 107
+
+  114 operators: TIMES •
+
+    $default  reduce using rule 114 (operators)
+
+
+State 108
+
+  115 operators: OVER •
+
+    $default  reduce using rule 115 (operators)
+
+
+State 109
+
+  116 operators: REST •
+
+    $default  reduce using rule 116 (operators)
+
+
+State 110
+
+   75 if_expression: id_number_compression comparadors • id_number_compression
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 136
+    number_val_spec        go to state 67
+
+
+State 111
+
+   59 operator_expression: id_number_compression operators • id_number_compression
+   61                    | id_number_compression operators • INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   63                    | id_number_compression operators • FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    FLOAT_TYPE_CAST  shift, and go to state 137
+    INT_TYPE_CAST    shift, and go to state 138
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 94
+
+    id_number_compression  go to state 139
+    number_val_spec        go to state 67
+
+
+State 112
+
+   71 if_statement: IF if_expression block •
+   72             | IF if_expression block • ELSE block
+
+    ELSE  shift, and go to state 140
+
+    $default  reduce using rule 71 (if_statement)
+
+
+State 113
+
+   49 assign_expression: FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+   62 operator_expression: FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators id_number_compression
+   65                    | FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 141
+
+
+State 114
+
+   48 assign_expression: INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+   60 operator_expression: INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators id_number_compression
+   64                    | INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 142
+
+
+State 115
+
+   52 assign_expression: ID $@10 • LEFT_PARENTESES argument_list_call $@11 RIGHT_PARENTESES
+
+    LEFT_PARENTESES  shift, and go to state 143
+
+
+State 116
+
+   42 array_declaration: VAR ID LEFT_BRACKET • INT_VAL RIGHT_BRACKET type_spec
+
+    INT_VAL  shift, and go to state 144
+
+
+State 117
+
+   37 val_declaration: VAR ID type_spec •
+
+    $default  reduce using rule 37 (val_declaration)
+
+
+State 118
+
+   34 statement: ID $@5 LEFT_PARENTESES • argument_list_call $@6 RIGHT_PARENTESES SEMI
+
+    $default  reduce using rule 16 (argument_list_call)
+
+    argument_list_call  go to state 145
+
+
+State 119
+
+   39 assign_val: ID $@7 ASSIGN • assign_expression
+
+    FLOAT_TYPE_CAST  shift, and go to state 68
+    INT_TYPE_CAST    shift, and go to state 69
+    STRING_VAL       shift, and go to state 35
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 71
+
+    string_list            go to state 72
+    assign_expression      go to state 146
+    operator_expression    go to state 74
+    id_number_compression  go to state 75
+    number_val_spec        go to state 67
+
+
+State 120
+
+   44 array_assign: ID $@9 LEFT_BRACKET • operator_expression RIGHT_BRACKET ASSIGN assign_expression
+
+    FLOAT_TYPE_CAST  shift, and go to state 58
+    INT_TYPE_CAST    shift, and go to state 59
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 94
+
+    operator_expression    go to state 147
+    id_number_compression  go to state 148
+    number_val_spec        go to state 67
+
+
+State 121
+
+   86 print_args: STRING_VAL •
+
+    $default  reduce using rule 86 (print_args)
+
+
+State 122
+
+   41 array_printable: ID • $@8 LEFT_BRACKET operator_expression RIGHT_BRACKET
+   68 id_number_compression: ID •
+
+    RIGHT_PARENTESES  reduce using rule 68 (id_number_compression)
+    $default          reduce using rule 40 ($@8)
+
+    $@8  go to state 149
+
+
+State 123
+
+   88 print_args: array_printable •
+
+    $default  reduce using rule 88 (print_args)
+
+
+State 124
+
+   87 print_args: id_number_compression •
+
+    $default  reduce using rule 87 (print_args)
+
+
+State 125
+
+   85 print_operation: PRINTLN LEFT_PARENTESES print_args • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 150
+
+
+State 126
+
+   90 scan_args: FORMAT_STRING • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 151
+
+
+State 127
+
+   91 scan_args: FORMAT_INT • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 152
+
+
+State 128
+
+   92 scan_args: FORMAT_FLOAT • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 153
+
+
+State 129
+
+   93 scan_args: FORMAT_BOOL • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 154
+
+
+State 130
+
+   89 scanf_operation: SCANF LEFT_PARENTESES scan_args • RIGHT_PARENTESES
+   94 scan_args: scan_args • COMMA FORMAT_STRING COMMA ADDRESS ID
+   95          | scan_args • COMMA FORMAT_INT COMMA ADDRESS ID
+   96          | scan_args • COMMA FORMAT_FLOAT COMMA ADDRESS ID
+   97          | scan_args • COMMA FORMAT_BOOL COMMA ADDRESS ID
+
+    RIGHT_PARENTESES  shift, and go to state 155
+    COMMA             shift, and go to state 156
+
+
+State 131
+
+   36 string_list: string_list COMMA STRING_VAL •
+
+    $default  reduce using rule 36 (string_list)
+
+
+State 132
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN • INT_VAL SEMI for_comparison SEMI for_update block
+
+    INT_VAL  shift, and go to state 157
+
+
+State 133
+
+   62 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators id_number_compression
+   65                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    PLUS   shift, and go to state 105
+    MINUS  shift, and go to state 106
+    TIMES  shift, and go to state 107
+    OVER   shift, and go to state 108
+    REST   shift, and go to state 109
+
+    operators  go to state 158
+
+
+State 134
+
+   60 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators id_number_compression
+   64                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    PLUS   shift, and go to state 105
+    MINUS  shift, and go to state 106
+    TIMES  shift, and go to state 107
+    OVER   shift, and go to state 108
+    REST   shift, and go to state 109
+
+    operators  go to state 159
+
+
+State 135
+
+   76 if_expression: operator_expression comparadors id_number_compression •
+
+    $default  reduce using rule 76 (if_expression)
+
+
+State 136
+
+   75 if_expression: id_number_compression comparadors id_number_compression •
+
+    $default  reduce using rule 75 (if_expression)
+
+
+State 137
+
+   63 operator_expression: id_number_compression operators FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 160
+    number_val_spec        go to state 67
+
+
+State 138
+
+   61 operator_expression: id_number_compression operators INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 161
+    number_val_spec        go to state 67
+
+
+State 139
+
+   59 operator_expression: id_number_compression operators id_number_compression •
+
+    $default  reduce using rule 59 (operator_expression)
+
+
+State 140
+
+   72 if_statement: IF if_expression block ELSE • block
+
+    LEFT_BRACE  shift, and go to state 26
+
+    block  go to state 162
+
+
+State 141
+
+   49 assign_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+   62 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators id_number_compression
+   65                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    PLUS   shift, and go to state 105
+    MINUS  shift, and go to state 106
+    TIMES  shift, and go to state 107
+    OVER   shift, and go to state 108
+    REST   shift, and go to state 109
+
+    $default  reduce using rule 49 (assign_expression)
+
+    operators  go to state 158
+
+
+State 142
+
+   48 assign_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+   60 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators id_number_compression
+   64                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES • operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    PLUS   shift, and go to state 105
+    MINUS  shift, and go to state 106
+    TIMES  shift, and go to state 107
+    OVER   shift, and go to state 108
+    REST   shift, and go to state 109
+
+    $default  reduce using rule 48 (assign_expression)
+
+    operators  go to state 159
+
+
+State 143
+
+   52 assign_expression: ID $@10 LEFT_PARENTESES • argument_list_call $@11 RIGHT_PARENTESES
+
+    $default  reduce using rule 16 (argument_list_call)
+
+    argument_list_call  go to state 163
+
+
+State 144
+
+   42 array_declaration: VAR ID LEFT_BRACKET INT_VAL • RIGHT_BRACKET type_spec
+
+    RIGHT_BRACKET  shift, and go to state 164
+
+
+State 145
+
+   17 argument_list_call: argument_list_call • comma_expression ID
+   18                   | argument_list_call • comma_expression argument_val
+   34 statement: ID $@5 LEFT_PARENTESES argument_list_call • $@6 RIGHT_PARENTESES SEMI
+
+    COMMA  shift, and go to state 24
+
+    RIGHT_PARENTESES  reduce using rule 33 ($@6)
+    $default          reduce using rule 57 (comma_expression)
+
+    $@6               go to state 165
+    comma_expression  go to state 166
+
+
+State 146
+
+   39 assign_val: ID $@7 ASSIGN assign_expression •
+
+    $default  reduce using rule 39 (assign_val)
+
+
+State 147
+
+   44 array_assign: ID $@9 LEFT_BRACKET operator_expression • RIGHT_BRACKET ASSIGN assign_expression
+
+    RIGHT_BRACKET  shift, and go to state 167
+
+
+State 148
+
+   59 operator_expression: id_number_compression • operators id_number_compression
+   61                    | id_number_compression • operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   63                    | id_number_compression • operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    PLUS   shift, and go to state 105
+    MINUS  shift, and go to state 106
+    TIMES  shift, and go to state 107
+    OVER   shift, and go to state 108
+    REST   shift, and go to state 109
+
+    operators  go to state 111
+
+
+State 149
+
+   41 array_printable: ID $@8 • LEFT_BRACKET operator_expression RIGHT_BRACKET
+
+    LEFT_BRACKET  shift, and go to state 168
+
+
+State 150
+
+   85 print_operation: PRINTLN LEFT_PARENTESES print_args RIGHT_PARENTESES •
+
+    $default  reduce using rule 85 (print_operation)
+
+
+State 151
+
+   90 scan_args: FORMAT_STRING COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 169
+
+
+State 152
+
+   91 scan_args: FORMAT_INT COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 170
+
+
+State 153
+
+   92 scan_args: FORMAT_FLOAT COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 171
+
+
+State 154
+
+   93 scan_args: FORMAT_BOOL COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 172
+
+
+State 155
+
+   89 scanf_operation: SCANF LEFT_PARENTESES scan_args RIGHT_PARENTESES •
+
+    $default  reduce using rule 89 (scanf_operation)
+
+
+State 156
+
+   94 scan_args: scan_args COMMA • FORMAT_STRING COMMA ADDRESS ID
+   95          | scan_args COMMA • FORMAT_INT COMMA ADDRESS ID
+   96          | scan_args COMMA • FORMAT_FLOAT COMMA ADDRESS ID
+   97          | scan_args COMMA • FORMAT_BOOL COMMA ADDRESS ID
+
+    FORMAT_STRING  shift, and go to state 173
+    FORMAT_INT     shift, and go to state 174
+    FORMAT_FLOAT   shift, and go to state 175
+    FORMAT_BOOL    shift, and go to state 176
+
+
+State 157
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN INT_VAL • SEMI for_comparison SEMI for_update block
+
+    SEMI  shift, and go to state 177
+
+
+State 158
+
+   62 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators • id_number_compression
+   65                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators • INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   67                    | FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators • FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    FLOAT_TYPE_CAST  shift, and go to state 178
+    INT_TYPE_CAST    shift, and go to state 179
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 94
+
+    id_number_compression  go to state 180
+    number_val_spec        go to state 67
+
+
+State 159
+
+   60 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators • id_number_compression
+   64                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators • FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+   66                    | INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators • INT_TYPE_CAST id_number_compression RIGHT_PARENTESES
+
+    FLOAT_TYPE_CAST  shift, and go to state 181
+    INT_TYPE_CAST    shift, and go to state 182
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 94
+
+    id_number_compression  go to state 183
+    number_val_spec        go to state 67
+
+
+State 160
+
+   63 operator_expression: id_number_compression operators FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 184
+
+
+State 161
+
+   61 operator_expression: id_number_compression operators INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 185
+
+
+State 162
+
+   72 if_statement: IF if_expression block ELSE block •
+
+    $default  reduce using rule 72 (if_statement)
+
+
+State 163
+
+   17 argument_list_call: argument_list_call • comma_expression ID
+   18                   | argument_list_call • comma_expression argument_val
+   52 assign_expression: ID $@10 LEFT_PARENTESES argument_list_call • $@11 RIGHT_PARENTESES
+
+    COMMA  shift, and go to state 24
+
+    RIGHT_PARENTESES  reduce using rule 51 ($@11)
+    $default          reduce using rule 57 (comma_expression)
+
+    $@11              go to state 186
+    comma_expression  go to state 166
+
+
+State 164
+
+   42 array_declaration: VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET • type_spec
+
+    INT_TYPE     shift, and go to state 28
+    FLOAT_TYPE   shift, and go to state 29
+    STRING_TYPE  shift, and go to state 30
+    VOID_TYPE    shift, and go to state 31
+    BOOL_TYPE    shift, and go to state 32
+
+    type_spec  go to state 187
+
+
+State 165
+
+   34 statement: ID $@5 LEFT_PARENTESES argument_list_call $@6 • RIGHT_PARENTESES SEMI
+
+    RIGHT_PARENTESES  shift, and go to state 188
+
+
+State 166
+
+   17 argument_list_call: argument_list_call comma_expression • ID
+   18                   | argument_list_call comma_expression • argument_val
+
+    STRING_VAL  shift, and go to state 189
+    FLOAT_VAL   shift, and go to state 190
+    INT_VAL     shift, and go to state 191
+    BOOL_VAL    shift, and go to state 192
+    ID          shift, and go to state 193
+
+    argument_val  go to state 194
+
+
+State 167
+
+   44 array_assign: ID $@9 LEFT_BRACKET operator_expression RIGHT_BRACKET • ASSIGN assign_expression
+
+    ASSIGN  shift, and go to state 195
+
+
+State 168
+
+   41 array_printable: ID $@8 LEFT_BRACKET • operator_expression RIGHT_BRACKET
+
+    FLOAT_TYPE_CAST  shift, and go to state 58
+    INT_TYPE_CAST    shift, and go to state 59
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 94
+
+    operator_expression    go to state 196
+    id_number_compression  go to state 148
+    number_val_spec        go to state 67
+
+
+State 169
+
+   90 scan_args: FORMAT_STRING COMMA ADDRESS • ID
+
+    ID  shift, and go to state 197
+
+
+State 170
+
+   91 scan_args: FORMAT_INT COMMA ADDRESS • ID
+
+    ID  shift, and go to state 198
+
+
+State 171
+
+   92 scan_args: FORMAT_FLOAT COMMA ADDRESS • ID
+
+    ID  shift, and go to state 199
+
+
+State 172
+
+   93 scan_args: FORMAT_BOOL COMMA ADDRESS • ID
+
+    ID  shift, and go to state 200
+
+
+State 173
+
+   94 scan_args: scan_args COMMA FORMAT_STRING • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 201
+
+
+State 174
+
+   95 scan_args: scan_args COMMA FORMAT_INT • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 202
+
+
+State 175
+
+   96 scan_args: scan_args COMMA FORMAT_FLOAT • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 203
+
+
+State 176
+
+   97 scan_args: scan_args COMMA FORMAT_BOOL • COMMA ADDRESS ID
+
+    COMMA  shift, and go to state 204
+
+
+State 177
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN INT_VAL SEMI • for_comparison SEMI for_update block
+
+    ID  shift, and go to state 205
+
+    for_comparison  go to state 206
+
+
+State 178
+
+   67 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 207
+    number_val_spec        go to state 67
+
+
+State 179
+
+   65 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 208
+    number_val_spec        go to state 67
+
+
+State 180
+
+   62 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression •
+
+    $default  reduce using rule 62 (operator_expression)
+
+
+State 181
+
+   64 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 209
+    number_val_spec        go to state 67
+
+
+State 182
+
+   66 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST • id_number_compression RIGHT_PARENTESES
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 210
+    number_val_spec        go to state 67
+
+
+State 183
+
+   60 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators id_number_compression •
+
+    $default  reduce using rule 60 (operator_expression)
+
+
+State 184
+
+   63 operator_expression: id_number_compression operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+
+    $default  reduce using rule 63 (operator_expression)
+
+
+State 185
+
+   61 operator_expression: id_number_compression operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+
+    $default  reduce using rule 61 (operator_expression)
+
+
+State 186
+
+   52 assign_expression: ID $@10 LEFT_PARENTESES argument_list_call $@11 • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 211
+
+
+State 187
+
+   42 array_declaration: VAR ID LEFT_BRACKET INT_VAL RIGHT_BRACKET type_spec •
+
+    $default  reduce using rule 42 (array_declaration)
+
+
+State 188
+
+   34 statement: ID $@5 LEFT_PARENTESES argument_list_call $@6 RIGHT_PARENTESES • SEMI
+
+    SEMI  shift, and go to state 212
+
+
+State 189
+
+   53 argument_val: STRING_VAL •
+
+    $default  reduce using rule 53 (argument_val)
+
+
+State 190
+
+   56 argument_val: FLOAT_VAL •
+
+    $default  reduce using rule 56 (argument_val)
+
+
+State 191
+
+   55 argument_val: INT_VAL •
+
+    $default  reduce using rule 55 (argument_val)
+
+
+State 192
+
+   54 argument_val: BOOL_VAL •
+
+    $default  reduce using rule 54 (argument_val)
+
+
+State 193
+
+   17 argument_list_call: argument_list_call comma_expression ID •
+
+    $default  reduce using rule 17 (argument_list_call)
+
+
+State 194
+
+   18 argument_list_call: argument_list_call comma_expression argument_val •
+
+    $default  reduce using rule 18 (argument_list_call)
+
+
+State 195
+
+   44 array_assign: ID $@9 LEFT_BRACKET operator_expression RIGHT_BRACKET ASSIGN • assign_expression
+
+    FLOAT_TYPE_CAST  shift, and go to state 68
+    INT_TYPE_CAST    shift, and go to state 69
+    STRING_VAL       shift, and go to state 35
+    FLOAT_VAL        shift, and go to state 60
+    INT_VAL          shift, and go to state 61
+    BOOL_VAL         shift, and go to state 70
+    ID               shift, and go to state 71
+
+    string_list            go to state 72
+    assign_expression      go to state 213
+    operator_expression    go to state 74
+    id_number_compression  go to state 75
+    number_val_spec        go to state 67
+
+
+State 196
+
+   41 array_printable: ID $@8 LEFT_BRACKET operator_expression • RIGHT_BRACKET
+
+    RIGHT_BRACKET  shift, and go to state 214
+
+
+State 197
+
+   90 scan_args: FORMAT_STRING COMMA ADDRESS ID •
+
+    $default  reduce using rule 90 (scan_args)
+
+
+State 198
+
+   91 scan_args: FORMAT_INT COMMA ADDRESS ID •
+
+    $default  reduce using rule 91 (scan_args)
+
+
+State 199
+
+   92 scan_args: FORMAT_FLOAT COMMA ADDRESS ID •
+
+    $default  reduce using rule 92 (scan_args)
+
+
+State 200
+
+   93 scan_args: FORMAT_BOOL COMMA ADDRESS ID •
+
+    $default  reduce using rule 93 (scan_args)
+
+
+State 201
+
+   94 scan_args: scan_args COMMA FORMAT_STRING COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 215
+
+
+State 202
+
+   95 scan_args: scan_args COMMA FORMAT_INT COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 216
+
+
+State 203
+
+   96 scan_args: scan_args COMMA FORMAT_FLOAT COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 217
+
+
+State 204
+
+   97 scan_args: scan_args COMMA FORMAT_BOOL COMMA • ADDRESS ID
+
+    ADDRESS  shift, and go to state 218
+
+
+State 205
+
+   80 for_comparison: ID • $@13 comparadors id_number_compression
+
+    $default  reduce using rule 79 ($@13)
+
+    $@13  go to state 219
+
+
+State 206
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN INT_VAL SEMI for_comparison • SEMI for_update block
+
+    SEMI  shift, and go to state 220
+
+
+State 207
+
+   67 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 221
+
+
+State 208
+
+   65 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 222
+
+
+State 209
+
+   64 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 223
+
+
+State 210
+
+   66 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression • RIGHT_PARENTESES
+
+    RIGHT_PARENTESES  shift, and go to state 224
+
+
+State 211
+
+   52 assign_expression: ID $@10 LEFT_PARENTESES argument_list_call $@11 RIGHT_PARENTESES •
+
+    $default  reduce using rule 52 (assign_expression)
+
+
+State 212
+
+   34 statement: ID $@5 LEFT_PARENTESES argument_list_call $@6 RIGHT_PARENTESES SEMI •
+
+    $default  reduce using rule 34 (statement)
+
+
+State 213
+
+   44 array_assign: ID $@9 LEFT_BRACKET operator_expression RIGHT_BRACKET ASSIGN assign_expression •
+
+    $default  reduce using rule 44 (array_assign)
+
+
+State 214
+
+   41 array_printable: ID $@8 LEFT_BRACKET operator_expression RIGHT_BRACKET •
+
+    $default  reduce using rule 41 (array_printable)
+
+
+State 215
+
+   94 scan_args: scan_args COMMA FORMAT_STRING COMMA ADDRESS • ID
+
+    ID  shift, and go to state 225
+
+
+State 216
+
+   95 scan_args: scan_args COMMA FORMAT_INT COMMA ADDRESS • ID
+
+    ID  shift, and go to state 226
+
+
+State 217
+
+   96 scan_args: scan_args COMMA FORMAT_FLOAT COMMA ADDRESS • ID
+
+    ID  shift, and go to state 227
+
+
+State 218
+
+   97 scan_args: scan_args COMMA FORMAT_BOOL COMMA ADDRESS • ID
+
+    ID  shift, and go to state 228
+
+
+State 219
+
+   80 for_comparison: ID $@13 • comparadors id_number_compression
+
+    EQUALS      shift, and go to state 97
+    LESS_EQUAL  shift, and go to state 98
+    MORE_EQUAL  shift, and go to state 99
+    LESS        shift, and go to state 100
+    MORE        shift, and go to state 101
+    DIFERS      shift, and go to state 102
+    NOT         shift, and go to state 103
+
+    comparadors  go to state 229
+
+
+State 220
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI • for_update block
+
+    ID  shift, and go to state 230
+
+    for_update  go to state 231
+
+
+State 221
+
+   67 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+
+    $default  reduce using rule 67 (operator_expression)
+
+
+State 222
+
+   65 operator_expression: FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+
+    $default  reduce using rule 65 (operator_expression)
+
+
+State 223
+
+   64 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators FLOAT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+
+    $default  reduce using rule 64 (operator_expression)
+
+
+State 224
+
+   66 operator_expression: INT_TYPE_CAST id_number_compression RIGHT_PARENTESES operators INT_TYPE_CAST id_number_compression RIGHT_PARENTESES •
+
+    $default  reduce using rule 66 (operator_expression)
+
+
+State 225
+
+   94 scan_args: scan_args COMMA FORMAT_STRING COMMA ADDRESS ID •
+
+    $default  reduce using rule 94 (scan_args)
+
+
+State 226
+
+   95 scan_args: scan_args COMMA FORMAT_INT COMMA ADDRESS ID •
+
+    $default  reduce using rule 95 (scan_args)
+
+
+State 227
+
+   96 scan_args: scan_args COMMA FORMAT_FLOAT COMMA ADDRESS ID •
+
+    $default  reduce using rule 96 (scan_args)
+
+
+State 228
+
+   97 scan_args: scan_args COMMA FORMAT_BOOL COMMA ADDRESS ID •
+
+    $default  reduce using rule 97 (scan_args)
+
+
+State 229
+
+   80 for_comparison: ID $@13 comparadors • id_number_compression
+
+    FLOAT_VAL  shift, and go to state 60
+    INT_VAL    shift, and go to state 61
+    BOOL_VAL   shift, and go to state 70
+    ID         shift, and go to state 94
+
+    id_number_compression  go to state 232
+    number_val_spec        go to state 67
+
+
+State 230
+
+   82 for_update: ID • $@14 PLUS_PLUS
+   84           | ID • $@15 MINUS_MINUS
+
+    MINUS_MINUS  reduce using rule 83 ($@15)
+    $default     reduce using rule 81 ($@14)
+
+    $@14  go to state 233
+    $@15  go to state 234
+
+
+State 231
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update • block
+
+    LEFT_BRACE  shift, and go to state 26
+
+    block  go to state 235
+
+
+State 232
+
+   80 for_comparison: ID $@13 comparadors id_number_compression •
+
+    $default  reduce using rule 80 (for_comparison)
+
+
+State 233
+
+   82 for_update: ID $@14 • PLUS_PLUS
+
+    PLUS_PLUS  shift, and go to state 236
+
+
+State 234
+
+   84 for_update: ID $@15 • MINUS_MINUS
+
+    MINUS_MINUS  shift, and go to state 237
+
+
+State 235
+
+   78 for_statement: FOR ID $@12 SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block •
+
+    $default  reduce using rule 78 (for_statement)
+
+
+State 236
+
+   82 for_update: ID $@14 PLUS_PLUS •
+
+    $default  reduce using rule 82 (for_update)
+
+
+State 237
+
+   84 for_update: ID $@15 MINUS_MINUS •
+
+    $default  reduce using rule 84 (for_update)
