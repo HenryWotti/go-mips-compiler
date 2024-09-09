@@ -173,10 +173,17 @@ void write_str() {
 
 void run_assign(AST *ast) {
     trace("assign");
-    rec_run_ast(get_child(ast, 1)); // Executa a expressão do lado direito
-    int val = popi();               // Retira o valor da pilha
+    rec_run_ast(get_child(ast, 1));  // Executa a expressão do lado direito
     int addr = get_data(get_child(ast, 0));  // Pega o endereço da variável
-    storei(addr, val);              // Armazena o valor na memória
+    
+    // Verifica se o valor atribuído é int ou float
+    if (get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+        float val = popf();  // Retira o valor da pilha como float
+        storef(addr, val);   // Armazena o valor float na memória
+    } else {
+        int val = popi();    // Retira o valor da pilha como int
+        storei(addr, val);   // Armazena o valor int na memória
+    }
 }
 
 void run_block(AST *ast) {
@@ -195,9 +202,17 @@ void run_eq(AST *ast) {
     trace("eq");
     rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
     rec_run_ast(get_child(ast, 1));  // Executa o lado direito
-    int right = popi();              // Desempilha o valor da direita
-    int left = popi();               // Desempilha o valor da esquerda
-    pushi(left == right);            // Empilha o resultado da comparação
+    
+    // Verifica se a comparação envolve floats
+    if (get_node_type(get_child(ast, 0)) == FLOAT_TYPE_ || get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+        float right = popf();  // Desempilha o valor da direita como float
+        float left = popf();   // Desempilha o valor da esquerda como float
+        pushi(left == right);  // Empilha o resultado da comparação
+    } else {
+        int right = popi();    // Desempilha o valor da direita como int
+        int left = popi();     // Desempilha o valor da esquerda como int
+        pushi(left == right);  // Empilha o resultado da comparação
+    }
 }
 
 void run_if(AST *ast) {
@@ -220,40 +235,82 @@ void run_lt(AST *ast) {
     trace("lt");
     rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
     rec_run_ast(get_child(ast, 1));  // Executa o lado direito
-    int right = popi();              // Desempilha o valor da direita
-    int left = popi();               // Desempilha o valor da esquerda
-    pushi(left < right);             // Empilha o resultado da comparação
+    
+    // Verifica se a comparação envolve floats
+    if (get_node_type(get_child(ast, 0)) == FLOAT_TYPE_ || get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+        float right = popf();  // Desempilha o valor da direita como float
+        float left = popf();   // Desempilha o valor da esquerda como float
+        pushi(left < right);   // Empilha o resultado da comparação
+    } else {
+        int right = popi();    // Desempilha o valor da direita como int
+        int left = popi();     // Desempilha o valor da esquerda como int
+        pushi(left < right);   // Empilha o resultado da comparação
+    }
 }
 
 void run_minus(AST *ast) {
     trace("minus");
     rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
     rec_run_ast(get_child(ast, 1));  // Executa o lado direito
-    int right = popi();              // Desempilha o valor da direita
-    int left = popi();               // Desempilha o valor da esquerda
-    pushi(left - right);             // Empilha o resultado da subtração
+    
+    // Verifique os tipos dos nós
+    if (get_node_type(get_child(ast, 0)) == FLOAT_TYPE_ || get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+        // Operação com floats
+        float right = popf();   // Desempilha o valor da direita como float
+        float left = popf();    // Desempilha o valor da esquerda como float
+        pushf(left - right);    // Empilha o resultado da subtração de floats
+    } else {
+        // Operação com inteiros
+        int right = popi();     // Desempilha o valor da direita como inteiro
+        int left = popi();      // Desempilha o valor da esquerda como inteiro
+        pushi(left - right);    // Empilha o resultado da subtração de inteiros
+    }
 }
 
 void run_over(AST *ast) {
     trace("over");
     rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
     rec_run_ast(get_child(ast, 1));  // Executa o lado direito
-    int right = popi();              // Desempilha o valor da direita
-    int left = popi();               // Desempilha o valor da esquerda
-    if (right == 0) {
-        printf("Runtime Error: Division by zero.\n");
-        exit(EXIT_FAILURE);
+    
+    // Verifique os tipos dos nós
+    if (get_node_type(get_child(ast, 0)) == FLOAT_TYPE_ || get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+        // Operação com floats
+        float right = popf();   // Desempilha o valor da direita como float
+        float left = popf();    // Desempilha o valor da esquerda como float
+        if (right == 0.0f) {
+            printf("Runtime Error: Division by zero.\n");
+            exit(EXIT_FAILURE);
+        }
+        pushf(left / right);    // Empilha o resultado da divisão de floats
+    } else {
+        // Operação com inteiros
+        int right = popi();     // Desempilha o valor da direita como inteiro
+        int left = popi();      // Desempilha o valor da esquerda como inteiro
+        if (right == 0) {
+            printf("Runtime Error: Division by zero.\n");
+            exit(EXIT_FAILURE);
+        }
+        pushi(left / right);    // Empilha o resultado da divisão de inteiros
     }
-    pushi(left / right);             // Empilha o resultado da divisão
 }
 
 void run_plus(AST *ast) {
     trace("plus");
     rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
     rec_run_ast(get_child(ast, 1));  // Executa o lado direito
-    int right = popi();              // Desempilha o valor da direita
-    int left = popi();               // Desempilha o valor da esquerda
-    pushi(left + right);             // Empilha o resultado da soma
+    
+    // Verifique os tipos dos nós
+    if (get_node_type(get_child(ast, 0)) == FLOAT_TYPE_ || get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+        // Operação com floats
+        float right = popf();   // Desempilha o valor da direita como float
+        float left = popf();    // Desempilha o valor da esquerda como float
+        pushf(left + right);    // Empilha o resultado da soma de floats
+    } else {
+        // Operação com inteiros
+        int right = popi();     // Desempilha o valor da direita como inteiro
+        int left = popi();      // Desempilha o valor da esquerda como inteiro
+        pushi(left + right);    // Empilha o resultado da soma de inteiros
+    }
 }
 
 void run_program(AST *ast) {
@@ -262,7 +319,6 @@ void run_program(AST *ast) {
     rec_run_ast(get_child(ast, 1)); // run block
 }
 
-// TODO
 void run_read(AST *ast) {
     trace("read");
     int var_idx = get_data(get_child(ast, 0));  // Pega o índice da variável
@@ -276,13 +332,11 @@ void run_read(AST *ast) {
     }
 }
 
-// TODO
 void run_real_val(AST *ast) {
     trace("float_val");
     pushf(get_float_data(ast));  // Empilha o valor float
 }
 
-// TODO
 void run_repeat(AST *ast) {
     trace("for");
     rec_run_ast(get_child(ast, 0));  // Inicialização
@@ -303,9 +357,19 @@ void run_times(AST *ast) {
     trace("times");
     rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
     rec_run_ast(get_child(ast, 1));  // Executa o lado direito
-    int right = popi();              // Desempilha o valor da direita
-    int left = popi();               // Desempilha o valor da esquerda
-    pushi(left * right);             // Empilha o resultado da multiplicação
+    
+    // Verifique os tipos dos nós
+    if (get_node_type(get_child(ast, 0)) == FLOAT_TYPE_ || get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+        // Operação com floats
+        float right = popf();   // Desempilha o valor da direita como float
+        float left = popf();    // Desempilha o valor da esquerda como float
+        pushf(left * right);    // Empilha o resultado da multiplicação de floats
+    } else {
+        // Operação com inteiros
+        int right = popi();     // Desempilha o valor da direita como inteiro
+        int left = popi();      // Desempilha o valor da esquerda como inteiro
+        pushi(left * right);    // Empilha o resultado da multiplicação de inteiros
+    }
 }
 
 void run_var_decl(AST *ast) {
@@ -458,6 +522,85 @@ void run_main(AST *ast) {
     rec_run_ast(main_block);  // Executa o bloco da função main.
 }
 
+void run_rest(AST *ast) {
+    trace("rest");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left % right);             // Empilha o resultado do módulo
+}
+
+void run_less(AST *ast) {
+    trace("less");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left < right);             // Empilha o resultado da comparação
+}
+
+void run_more(AST *ast) {
+    trace("more");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left > right);             // Empilha o resultado da comparação
+}
+
+void run_less_equal(AST *ast) {
+    trace("less_equal");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left <= right);            // Empilha o resultado da comparação
+}
+
+void run_more_equal(AST *ast) {
+    trace("more_equal");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left >= right);            // Empilha o resultado da comparação
+}
+
+void run_difers(AST *ast) {
+    trace("difers");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left != right);            // Empilha o resultado da comparação
+}
+
+void run_and(AST *ast) {
+    trace("and");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left && right);            // Empilha o resultado da operação AND
+}
+
+void run_or(AST *ast) {
+    trace("or");
+    rec_run_ast(get_child(ast, 0));  // Executa o lado esquerdo
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito
+    int right = popi();              // Desempilha o valor da direita
+    int left = popi();               // Desempilha o valor da esquerda
+    pushi(left || right);            // Empilha o resultado da operação OR
+}
+
+void run_not(AST *ast) {
+    trace("not");
+    rec_run_ast(get_child(ast, 0));  // Executa a expressão
+    int val = popi();                // Desempilha o valor
+    pushi(!val);                     // Empilha o resultado da operação NOT
+}
+
 
 void rec_run_ast(AST *ast) {
     switch(get_kind(ast)) {
@@ -468,9 +611,17 @@ void rec_run_ast(AST *ast) {
         case IF_NODE:       run_if(ast);        break;
         case INT_VAL_NODE:  run_int_val(ast);   break;
         case LESS_NODE:     run_lt(ast);        break;
+        case MORE_NODE:     run_more(ast);      break;
+        case LESS_EQUAL_NODE: run_less_equal(ast); break;
+        case MORE_EQUAL_NODE: run_more_equal(ast); break;
+        case DIFERS_NODE:   run_difers(ast);    break;
+        case AND_NODE:      run_and(ast);       break;
+        case OR_NODE:       run_or(ast);        break;
+        case NOT_NODE:      run_not(ast);       break;
         case MINUS_NODE:    run_minus(ast);     break;
         case OVER_NODE:     run_over(ast);      break;
         case PLUS_NODE:     run_plus(ast);      break;
+        case REST_NODE:     run_rest(ast);      break;
         case PROGRAM_NODE:  run_program(ast);   break;
         case READ_NODE:     run_read(ast);      break;
         case FLOAT_VAL_NODE: run_real_val(ast);  break;
@@ -486,6 +637,7 @@ void rec_run_ast(AST *ast) {
         case FUNC_USE_NODE:     run_func_use(ast);     break;
         case FUNC_CALL_NODE:    run_func_call(ast);    break;
         case MAIN_NODE:    run_main(ast);   break;
+
 
 
         case I2F_NODE:      run_i2f(ast);       break;
