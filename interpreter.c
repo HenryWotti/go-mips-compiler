@@ -5,6 +5,7 @@
 #include "interpreter.h"
 #include "tables.h"
 
+NodeKind current_context_node_kind;
 extern FuncTable *ft;
 
 // ----------------------------------------------------------------------------
@@ -64,8 +65,10 @@ void print_stack() {
 // Variables memory -----------------------------------------------------------
 
 #define MEM_SIZE 100
+#define ARRAY_MEM_SIZE 100  // Tamanho separado para memória de arrays
 
-Word mem[MEM_SIZE];
+Word mem[MEM_SIZE];         // Memória para variáveis normais
+Word array_mem[ARRAY_MEM_SIZE]; // Memória separada para arrays
 
 void storei(int addr, int val) {
     mem[addr].as_int = val;
@@ -83,9 +86,28 @@ float loadf(int addr) {
     return mem[addr].as_float;
 }
 
+void store_arrayi(int addr, int val) {
+    array_mem[addr].as_int = val;
+}
+
+int load_arrayi(int addr) {
+    return array_mem[addr].as_int;
+}
+
+void store_arrayf(int addr, float val) {
+    array_mem[addr].as_float = val;
+}
+
+float load_arrayf(int addr) {
+    return array_mem[addr].as_float;
+}
+
 void init_mem() {
     for (int addr = 0; addr < MEM_SIZE; addr++) {
         mem[addr].as_int = 0;
+    }
+    for (int addr = 0; addr < ARRAY_MEM_SIZE; addr++) {
+        array_mem[addr].as_int = 0;
     }
 }
 
@@ -113,22 +135,20 @@ void read_int(int var_idx) {
 
 void read_real(int var_idx) {
     float x;
-    printf("read (real): ");
+    printf("read (float32): ");
     scanf("%f", &x);
     storef(var_idx, x);
 }
 
 void read_bool(int var_idx) {
     int x;
-    do {
-        printf("read (bool - 0 = false, 1 = true): ");
-        scanf("%d", &x);
-    } while (x != 0 && x != 1);
+    printf("read (bool - 0 = false, 1 = true): ");
+    scanf("%d", &x);
     storei(var_idx, x);
 }
 
 void read_str(int var_idx) {
-    printf("read (str): ");
+    printf("read (string): ");
     clear_str_buf();
     scanf("%s", str_buf);   // Did anyone say Buffer Overflow..? ;P
     storei(var_idx, add_string(st, str_buf));
@@ -139,7 +159,7 @@ void write_int() {
 }
 
 void write_real() {
-    printf("%f\n", popf());
+    printf("%.2f\n", popf());
 }
 
 void write_bool() {
@@ -167,11 +187,12 @@ void write_str() {
     clear_str_buf();
     escape_str(get_string(st, s), str_buf);
     printf(str_buf); // Weird language semantics, if printing a string, no new line.
+    printf("\n");
 }
 
 // ----------------------------------------------------------------------------
 
-void run_assign(AST *ast) {
+/*void run_assign(AST *ast) {
     trace("assign");
     rec_run_ast(get_child(ast, 1));  // Executa a expressão do lado direito
     int addr = get_data(get_child(ast, 0));  // Pega o endereço da variável
@@ -184,7 +205,47 @@ void run_assign(AST *ast) {
         int val = popi();    // Retira o valor da pilha como int
         storei(addr, val);   // Armazena o valor int na memória
     }
+}*/
+void run_assign(AST *ast) {
+    trace("assign");
+
+    // Verifica se o lado esquerdo é um acesso a array
+    if (get_kind(get_child(ast, 0)) == ARRAY_ACCESS_NODE) {
+        rec_run_ast(get_child(ast, 1));  // Avalia o lado direito (valor a ser atribuído)
+
+        // Pega o índice do array e a posição
+        int array_idx = get_data(get_child(get_child(ast, 0), 0));
+        rec_run_ast(get_child(get_child(ast, 0), 1));  // Avalia a posição no array
+        int index = popi();  // Pega o índice avaliado
+
+        // Verifica se o índice está dentro do limite do array
+        int array_size = load_arrayi(array_idx);
+        if (index < 0 || index >= array_size) {
+            printf("Runtime Error: Array index out of bounds\n");
+            exit(EXIT_FAILURE);
+        }
+
+        // Armazena o valor no array
+        int val = popi();  // Pega o valor a ser atribuído
+        store_arrayi(array_idx + index + 1, val);  // "+1" para não sobrepor o tamanho do array
+    } else {
+        // Caso normal de atribuição a variável simples
+        rec_run_ast(get_child(ast, 1));  // Executa a expressão do lado direito
+        int addr = get_data(get_child(ast, 0));  // Pega o endereço da variável
+        
+        // Verifica se o valor atribuído é int ou float
+        if (get_node_type(get_child(ast, 1)) == FLOAT_TYPE_) {
+            float val = popf();  // Retira o valor da pilha como float
+            storef(addr, val);   // Armazena o valor float na memória
+        } else {
+            int val = popi();    // Retira o valor da pilha como int
+            storei(addr, val);   // Armazena o valor int na memória
+        }
+    }
 }
+
+
+
 
 void run_block(AST *ast) {
     trace("block");
@@ -339,12 +400,16 @@ void run_real_val(AST *ast) {
 
 void run_repeat(AST *ast) {
     trace("for");
-    rec_run_ast(get_child(ast, 0));  // Inicialização
+    rec_run_ast(get_child(ast, 0));  // Inicialização (ex: i := 0)
+    
     while (1) {
-        rec_run_ast(get_child(ast, 1));  // Expressão de teste
+        rec_run_ast(get_child(ast, 1));  // Condição (ex: i < 5)
+        
         if (!popi()) break;              // Se a condição for falsa, sai do loop
-        rec_run_ast(get_child(ast, 2));  // Corpo do laço
-        rec_run_ast(get_child(ast, 3));  // Atualização (e.g., i++)
+        
+        rec_run_ast(get_child(ast, 3));  // Executa o bloco de código (ex: print)
+        
+        rec_run_ast(get_child(ast, 2));  // Atualização (ex: i = i + 1)
     }
 }
 
@@ -383,6 +448,8 @@ void run_var_use(AST *ast) {
     switch (get_node_type(ast)) {
         case INT_TYPE_:   pushi(loadi(var_idx));   break;
         case FLOAT_TYPE_: pushf(loadf(var_idx));   break;
+        case BOOL_TYPE_: pushi(loadi(var_idx));   break;
+        case STRING_TYPE_: pushi(loadi(var_idx));   break;
         default: printf("Runtime Error: Invalid variable type.\n");
                  exit(EXIT_FAILURE);
     }
@@ -415,25 +482,35 @@ void run_f2i(AST* ast) {
     pushi((int)float_val);
 }
 
+int is_assign_context() {
+    // Aqui você verifica se o nó atual está sendo usado no contexto de atribuição.
+    // Isso pode depender de como o AST foi construído.
+    return (current_context_node_kind == ASSIGN_NODE);  // Exemplo simples
+}
+
 void run_array_access(AST *ast) {
     trace("array_access");
-    
+
     // Avalia a expressão que representa o índice do array
     rec_run_ast(get_child(ast, 1)); 
     int index = popi();  // Pega o índice do topo da pilha
-    
+
     // Pega a variável do array
     int array_idx = get_data(get_child(ast, 0)); 
-    
+
     // Verifica se o índice está dentro dos limites do array
-    if (index < 0 || index >= loadi(array_idx)) {
+    int array_size = load_arrayi(array_idx);  // Primeiro valor é o tamanho do array
+    if (index < 0 || index >= array_size) {
         printf("Runtime Error: Array index out of bounds\n");
         exit(EXIT_FAILURE);
     }
-    
+
     // Acessa o valor na posição correta do array
-    pushi(loadi(array_idx + index + 1));  // "+1" para compensar o valor inicial armazenado
+    pushi(load_arrayi(array_idx + index + 1));  
 }
+
+
+
 
 void run_array_decl(AST *ast) {
     trace("array_decl");
@@ -446,18 +523,19 @@ void run_array_decl(AST *ast) {
         printf("Runtime Error: Invalid array size\n");
         exit(EXIT_FAILURE);
     }
-    
+
     // Pega o índice da variável do array
     int array_idx = get_data(get_child(ast, 0));
-    
-    // Armazena o tamanho do array na primeira posição
-    storei(array_idx, array_size);
-    
+
+    // Armazena o tamanho do array na primeira posição do array_mem
+    store_arrayi(array_idx, array_size);
+
     // Inicializa o array com valores padrão (por exemplo, 0)
     for (int i = 1; i <= array_size; i++) {
-        storei(array_idx + i, 0);  // Inicializa cada posição com 0
+        store_arrayi(array_idx + i, 0);  // Inicializa cada posição com 0
     }
 }
+
 
 void run_func_list(AST *ast) {
     trace("func_list");
@@ -601,10 +679,23 @@ void run_not(AST *ast) {
     pushi(!val);                     // Empilha o resultado da operação NOT
 }
 
+void run_short_assign(AST *ast) {
+    trace("short_assign");
+
+    rec_run_ast(get_child(ast, 1));  // Executa o lado direito da atribuição (ex: 0)
+    int val = popi();                // Pega o valor do topo da pilha
+    int addr = get_data(get_child(ast, 0));  // Pega o índice da variável
+
+    storei(addr, val);  // Armazena o valor na memória
+}
+
+
 
 void rec_run_ast(AST *ast) {
+    current_context_node_kind = get_kind(ast);
     switch(get_kind(ast)) {
         case ASSIGN_NODE:   run_assign(ast);    break;
+        case SHORT_ASSIGN_NODE:   run_short_assign(ast);    break;
         case EQ_NODE:       run_eq(ast);        break;
         case BLOCK_NODE:    run_block(ast);     break;
         case BOOL_VAL_NODE: run_bool_val(ast);  break;
