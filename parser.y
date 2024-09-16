@@ -13,6 +13,17 @@
 #include "parser.h"
 #include "interpreter.h"
 
+/*--------------------------- Pilha ----------------------------*/
+
+#define MAX_LOOP_DEPTH 100  // Defina o máximo de loops aninhados permitidos
+char for_id_stack[MAX_LOOP_DEPTH][MAX_LOOP_DEPTH];
+int for_id_top = -1;  // Inicializa o topo da pilha como vazio
+void push_for_id(const char* id);
+void pop_for_id();
+const char* top_for_id();
+
+/* ------------------------------------------------------------- */
+
 int yylex(void);
 int yylex_destroy(void);
 void yyerror(char const *s);
@@ -53,6 +64,8 @@ char copied_id_array[128]; //copia o ultimo id visto auxiliar para array
 char copied_func_id[128]; //copia o ultimo id de funcao visto
 
 Type last_decl_type; //tipo mais recente declarado
+Type for_decl_type;
+char copied_for_id[128];
 
 AST *ast_root = NULL;
 AST* argument_list_root = NULL; 
@@ -544,19 +557,22 @@ if_expression:
 | operator_expression comparadors id_number_compression { 
       $$ = new_subtree(get_kind($2), VOID_TYPE_, 2, $1, $3);
   }
+| array_printable comparadors array_printable { 
+      $$ = new_subtree(get_kind($2), VOID_TYPE_, 2, $1, $3);
+  }
   //$$ = new_subtree(get_kind($3), VOID_TYPE_, 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), $4);
 ;
 
 for_statement:
   FOR ID { 
-      last_decl_type = INT_TYPE_; 
-      new_var(); 
+      last_decl_type = INT_TYPE_;
+      new_var();
+      strcpy(copied_for_id, copied_id);
+      push_for_id(copied_id);  // Empilha o ID do loop
   } SHORT_ASSIGN INT_VAL SEMI for_comparison SEMI for_update block {
-      // $2: ID (variável), $4: SHORT_ASSIGN, $5: INT_VAL, $6: SEMI, $7: for_comparison, $8: SEMI, $9: for_update, $10: block
-
       // Inicialização: ID := INT_VAL
       AST *init_node = new_subtree(SHORT_ASSIGN_NODE, VOID_TYPE_, 2, 
-                                   new_node(VAR_DECL_NODE, lookup_var(vt, copied_id, current_scope), INT_TYPE_), 
+                                   new_node(VAR_DECL_NODE, lookup_var(vt, (char*)top_for_id(), current_scope), INT_TYPE_),
                                    new_node_int(INT_VAL_NODE, get_data($5), INT_TYPE_));
 
       // Condição de continuação do loop (e.g., i < 5)
@@ -570,16 +586,46 @@ for_statement:
 
       // Nó principal do loop for
       $$ = new_subtree(FOR_NODE, VOID_TYPE_, 4, init_node, cond_node, update_node, body_node);
+      
+      pop_for_id();  // Desempilha o ID do loop ao final do bloco
   }
 ;
 
 
 for_comparison:
   ID { 
-      check_var();
-  } comparadors id_number_compression {
+      check_var(); 
+  } comparadors expression {
       // Cria o nó de comparação entre a variável e a expressão
-      $$ = new_subtree(get_kind($3), VOID_TYPE_, 2, new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)), $4);
+      $$ = new_subtree(get_kind($3), VOID_TYPE_, 2,
+            new_node(VAR_USE_NODE, lookup_var(vt, (char*)top_for_id(), current_scope), get_type_from_var(yylineno, copied_id, current_scope)), 
+            $4);
+  }
+;
+
+expression:
+  expression PLUS expression {
+    if (get_node_type($1) == get_node_type($3)) {
+      $$ = new_subtree(PLUS_NODE, get_node_type($1), 2, $1, $3);
+    } else {
+      printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(get_node_type($1)), get_text(get_node_type($3)));
+      exit(EXIT_FAILURE);
+    }
+  }
+| expression MINUS expression {
+    if (get_node_type($1) == get_node_type($3)) {
+      $$ = new_subtree(MINUS_NODE, get_node_type($1), 2, $1, $3);
+    } else {
+      printf("SEMANTIC ERROR (%d): Incompatible types '%s' and '%s' for operator\n", yylineno, get_text(get_node_type($1)), get_text(get_node_type($3)));
+      exit(EXIT_FAILURE);
+    }
+  }
+| INT_VAL {
+      $$ = $1; // Caso o valor seja um número inteiro direto
+  }
+| ID {
+      check_var();
+      $$ = new_node(VAR_USE_NODE, lookup_var(vt, copied_id, current_scope), get_type_from_var(yylineno, copied_id, current_scope)); 
   }
 ;
 
@@ -902,6 +948,33 @@ int new_func() {
 void yyerror (char const *s) {
     printf("SYNTAX ERROR (%d): %s\n", yylineno, s);
     exit(EXIT_FAILURE);
+}
+
+void push_for_id(const char* id) {
+    if (for_id_top < MAX_LOOP_DEPTH - 1) {
+        for_id_top++;
+        strcpy(for_id_stack[for_id_top], id);
+    } else {
+        printf("Runtime Error: Exceeded maximum loop depth.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void pop_for_id() {
+    if (for_id_top >= 0) {
+        for_id_top--;
+    } else {
+        printf("Runtime Error: Popped from an empty loop stack.\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+const char* top_for_id() {
+    if (for_id_top >= 0) {
+        return for_id_stack[for_id_top];
+    } else {
+        return NULL;
+    }
 }
 
 int main() {

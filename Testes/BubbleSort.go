@@ -13,14 +13,14 @@ func main() {
     arr[3] = 40;
     arr[4] = 20;
 
-	for k := 0; k < 5; k++ {
+	for k := 0; k < len; k++ {
 		fmt.Println(arr[k]);
 	}
 
 	fmt.Println("Print 1 concluido");
 
-	for i := 0; i < 4; i++ {
-		for j := 0; j < 4 - i; j++ {
+	for i := 0; i < len-1; i++ {
+		for j := 0; j < len-i-1; j++ {
 			if arr[j] > arr[j+1] {
                 // Troca os elementos se o anterior for maior que o próximo
                 aux = arr[j];
@@ -32,7 +32,7 @@ func main() {
 
 	fmt.Println("Bubble sort concluido");
 
-	for w := 0; w < 5; w++ {
+	for w := 0; w < len; w++ {
 		fmt.Println(arr[w]);
 	}
 }

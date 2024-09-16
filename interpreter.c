@@ -501,7 +501,7 @@ void run_array_access(AST *ast) {
     // Verifica se o índice está dentro dos limites do array
     int array_size = load_arrayi(array_idx);  // Primeiro valor é o tamanho do array
     if (index < 0 || index >= array_size) {
-        printf("Runtime Error: Array index out of bounds\n");
+        printf("Runtime Error: Array index out of boundss\n");
         exit(EXIT_FAILURE);
     }
 
