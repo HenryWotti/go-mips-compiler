@@ -7,11 +7,11 @@ func main() {
 	var len int;
 	len = 5;
 	var arr[5] int;
-	arr[0] = 50;
-    arr[1] = 30;
+	arr[0] = 70;
+    arr[1] = 35;
     arr[2] = 10;
-    arr[3] = 40;
-    arr[4] = 20;
+    arr[3] = 42;
+    arr[4] = 29;
 
 	for k := 0; k < len; k++ {
 		fmt.Println(arr[k]);
@@ -30,7 +30,7 @@ func main() {
 		}
     }
 
-	fmt.Println("Bubble sort concluido");
+	fmt.Println("Bubble sort concluido, imprimindo resultados:");
 
 	for w := 0; w < len; w++ {
 		fmt.Println(arr[w]);

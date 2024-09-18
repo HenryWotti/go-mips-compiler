@@ -19,14 +19,17 @@ func main() {
 	fmt.Println(str);
 
 	var j int;
+	var l int;
 
-	j = int(2.9) - 5;
-	h = j + 7;
+	l = h - 2; // 3 - 2 
+	j = int(2.9) - 5; // j = -3
+	h = j + 7; // -3 + 7 = 4
+	fmt.Println(l);
 	fmt.Println(j);
 	fmt.Println(h);
 
-	y = float32(2);
+	y = float32(2); // y = 2.00
 	fmt.Println(y);
-	y = float32(h) * 3.5;
+	y = float32(h) * 3.5; // y = h * 3.5
 	fmt.Println(y);
 }

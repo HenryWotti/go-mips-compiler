@@ -4,6 +4,9 @@
 
 #include "types.h"
 
+struct node;  // Declaração antecipada (forward declaration)
+typedef struct node AST;  // Declarando AST como um alias para a estrutura "node"
+
 // Strings Table
 // ----------------------------------------------------------------------------
 
@@ -75,12 +78,33 @@ void free_var_table(VarTable *vt);
 
 // Functions Table
 // ----------------------------------------------------------------------------
+#define FUNCTION_MAX_SIZE 128
+#define FUNCTIONS_TABLE_MAX_SIZE 100
+#define MAX_PARAM 10
+typedef struct
+{
+    char name[FUNCTION_MAX_SIZE];
+    int line;
+    Type type;
+    int scope; // Adicionando o campo 'scope'
+    int param_count;
+    Type param_types[MAX_PARAM];
+    AST *ast_node;  // Adiciona um campo para armazenar o nó da AST
+} FuncEntry;
+
+struct func_table
+{
+    FuncEntry t[FUNCTIONS_TABLE_MAX_SIZE];
+    int size;
+};
 
 struct func_table;
 typedef struct func_table FuncTable;
 
 FuncTable *create_func_table();
+FuncEntry* get_func_entry(FuncTable *ft, int idx);
 int add_func(FuncTable *ft, char *s, int line, Type type, int scope, int param_count);
+void update_func_ast(FuncTable *ft, int func_idx, AST *ast_node);
 void add_param_type(FuncTable *ft, int func_idx, Type param_type, int line);
 void update_func_return_type(FuncTable *ft, int func_idx, Type return_type);
 void check_function_argument_types(FuncTable *ft, int func_idx, Type arg_types[], int arg_count, int line);
@@ -163,8 +187,7 @@ typedef enum
     PARAM_LIST_NODE,
     FUNC_USE_NODE,
     FUNC_DECL_NODE,
-    FUNC_LIST_NODE,
-    FUNC_NODE,
+    FUNC_LIST_NODE
 } NodeKind;
 
 struct node; // Opaque structure to ensure encapsulation.

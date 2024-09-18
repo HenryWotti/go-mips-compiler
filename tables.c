@@ -165,25 +165,8 @@ void free_var_table(VarTable *vt)
 // Functions Table
 // ----------------------------------------------------------------------------
 
-#define FUNCTION_MAX_SIZE 128
-#define FUNCTIONS_TABLE_MAX_SIZE 100
-#define MAX_PARAM 10
 
-typedef struct
-{
-    char name[FUNCTION_MAX_SIZE];
-    int line;
-    Type type;
-    int scope; // Adicionando o campo 'scope'
-    int param_count;
-    Type param_types[MAX_PARAM];
-} FuncEntry;
 
-struct func_table
-{
-    FuncEntry t[FUNCTIONS_TABLE_MAX_SIZE];
-    int size;
-};
 
 FuncTable *create_func_table()
 {
@@ -226,6 +209,11 @@ int add_func(FuncTable *ft, char *s, int line, Type type, int scope, int param_c
     int idx_added = ft->size;
     ft->size++;
     return idx_added;
+}
+
+void update_func_ast(FuncTable *ft, int func_idx, AST *ast_node)
+{
+    ft->t[func_idx].ast_node = ast_node;
 }
 
 void add_param_type(FuncTable *ft, int func_idx, Type param_type, int line)
@@ -296,6 +284,16 @@ void free_func_table(FuncTable *ft)
 {
     free(ft);
 }
+
+FuncEntry* get_func_entry(FuncTable *ft, int idx) {
+    if (idx < 0 || idx >= ft->size) {
+        printf("Runtime Error: Function index out of bounds.\n");
+        exit(EXIT_FAILURE);
+    }
+    return &ft->t[idx];
+}
+
+
 
 // AST
 //----------------------------------------------------------------------------------
@@ -534,11 +532,9 @@ char *kind2str(NodeKind kind)
     case FUNC_USE_NODE:
         return "func_use";
     case FUNC_DECL_NODE:
-        return "";
+        return "func_decl";
     case FUNC_LIST_NODE:
         return "func_list";
-    case FUNC_NODE:
-        return "";
     case RETURN_NODE:
         return "return";
     default:
@@ -578,9 +574,10 @@ int print_node_dot(AST *node)
     else if (node->kind == FUNC_USE_NODE)
     {
         fprintf(stderr, "%s@", get_func_name(ft, node->data.as_int));
-    } /*else if (node->kind == FUNC_DECL_NODE){
+    }
+    else if (node->kind == FUNC_DECL_NODE){
         fprintf(stderr, "%s@", get_func_name(ft, node->data.as_int));
-    } */
+    }
     else
     {
         fprintf(stderr, "%s", kind2str(node->kind));

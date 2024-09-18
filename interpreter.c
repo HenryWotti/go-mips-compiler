@@ -8,15 +8,20 @@
 NodeKind current_context_node_kind;
 extern FuncTable *ft;
 
+
 // ----------------------------------------------------------------------------
 
 extern StrTable *st;
 extern VarTable *vt;
+extern AST *ast_root;
 
 typedef union {
     int   as_int;
     float as_float;
 } Word;
+
+int return_encountered = 0;  // Global para indicar se um retorno foi encontrado
+Word return_value;           // Variável para armazenar o valor de retorno
 
 // ----------------------------------------------------------------------------
 
@@ -244,12 +249,13 @@ void run_assign(AST *ast) {
     }
 }
 
-
-
-
 void run_block(AST *ast) {
     trace("block");
+
     for (int i = 0; i < get_child_count(ast); i++) {
+        if (return_encountered) {
+            break;  // Se um retorno foi encontrado, interrompe a execução do bloco
+        }
         rec_run_ast(get_child(ast, i));  // Executa recursivamente cada instrução no bloco
     }
 }
@@ -509,9 +515,6 @@ void run_array_access(AST *ast) {
     pushi(load_arrayi(array_idx + index + 1));  
 }
 
-
-
-
 void run_array_decl(AST *ast) {
     trace("array_decl");
     
@@ -536,61 +539,92 @@ void run_array_decl(AST *ast) {
     }
 }
 
+void run_func_decl(AST *ast) {
+    // Placeholder function, pois a função já foi registrada na tabela de funções.
+    trace("function declaration");
+}
+
+
 
 void run_func_list(AST *ast) {
-    trace("func_list");
+    trace("function list");
     
-    int num_functions = get_child_count(ast);
-    
-    // Itera sobre todas as funções na lista de funções
-    for (int i = 0; i < num_functions; i++) {
-        rec_run_ast(get_child(ast, i));  // Executa cada função
+    for (int i = 0; i < get_child_count(ast); i++) {
+        rec_run_ast(get_child(ast, i));  // Processa a declaração de cada função
     }
 }
 
 void run_func_use(AST *ast) {
     trace("func_use");
 
-    int func_idx = get_data(ast);  // Pega o índice da função chamada
+    int func_idx = get_data(ast);  // Pega o índice da função
+    AST *func_ast = ft->t[func_idx].ast_node;  // Pega a AST da função a partir da tabela
+    //printf("DEBUG: Funcao '%s' chamada\n", get_func_name(ft, func_idx));
 
-    // Verifica se a função existe na tabela de funções (ajustar conforme sua tabela de funções)
-    if (lookup_func(ft, get_func_name(ft, func_idx)) == -1) {
-        printf("Runtime Error: Function not found.\n");
-        exit(EXIT_FAILURE);
+    // Passa os parâmetros para a função
+    AST *arg_list = get_child(ast, 0);  // Pega a lista de argumentos da chamada
+    AST *param_list = get_child(func_ast, 0);  // Pega a lista de parâmetros da definição da função
+
+    // Faz a correspondência entre argumentos e parâmetros
+    for (int i = 0; i < get_child_count(arg_list); i++) {
+        //printf("DEBUG: Passando parametro %d\n", i);
+        rec_run_ast(get_child(arg_list, i));  // Executa o argumento
+        int param_idx = get_data(get_child(param_list, i));  // Pega o índice do parâmetro
+
+        // Armazena o argumento na posição do parâmetro na memória
+        if (get_node_type(get_child(param_list, i)) == FLOAT_TYPE_) {
+            float arg_val = popf();
+            storef(param_idx, arg_val);
+        } else {
+            int arg_val = popi();
+            storei(param_idx, arg_val);
+        }
     }
 
-    // Recupera a lista de parâmetros e o bloco da função
-    AST *param_list = get_child(ast, 0);
-    AST *block_node = get_child(ast, 1);
+    // Executa o corpo da função (o bloco de código da função está no segundo filho do nó de função)
+    rec_run_ast(get_child(func_ast, 1));  // Executa o corpo da função (block)
 
-    // Empilha os argumentos
-    int num_args = get_child_count(param_list);
-    for (int i = 0; i < num_args; i++) {
-        rec_run_ast(get_child(param_list, i));  // Avalia cada argumento e o empilha
+    // Verifica se a função encontrou um retorno
+    if (return_encountered) {
+        //printf("DEBUG: Retorno capturado da funcao '%s'\n", get_func_name(ft, func_idx));
+        return_encountered = 0;  // Reseta o flag de retorno após captura
+        
+        // Coloca o valor de retorno de volta na pilha para ser usado pela função chamadora
+        if (get_func_type(ft, func_idx) == FLOAT_TYPE_) {
+            pushf(return_value.as_float);
+        } else {
+            pushi(return_value.as_int);
+        }
+    } else {
+        //printf("DEBUG: Funcao '%s' nao tem retorno\n", get_func_name(ft, func_idx));
     }
-
-    // Executa o bloco da função
-    rec_run_ast(block_node);
 }
 
-// Função para rodar FUNC_CALL_NODE
-void run_func_call(AST *ast) {
-    trace("func_call");
-    
-    // Primeiro filho: nome da função (FUNC_USE_NODE)
-    rec_run_ast(get_child(ast, 0));
-    
-    // Segundo filho: lista de argumentos (ARGUMENT_LIST_NODE)
-    AST *argument_list = get_child(ast, 1);
-    int num_args = get_child_count(argument_list);
-    
-    // Avalia todos os argumentos e os empilha na pilha
-    for (int i = 0; i < num_args; i++) {
-        rec_run_ast(get_child(argument_list, i));  // Empilha cada argumento
+
+
+void run_return(AST *ast) {
+    trace("return");
+
+    // Verifica se o nó de retorno tem um filho (expressão a ser retornada)
+    if (get_child_count(ast) > 0) {
+        //printf("DEBUG: Retorno sendo executado\n");
+        
+        // Executa a expressão de retorno (filho do RETURN_NODE)
+        rec_run_ast(get_child(ast, 0));  // Pega o filho do RETURN_NODE (a expressão de retorno)
+        
+        // Armazena o valor de retorno dependendo do tipo da expressão
+        if (get_node_type(get_child(ast, 0)) == FLOAT_TYPE_) {
+            return_value.as_float = popf();
+            //printf("DEBUG: Valor de retorno (float): %.2f\n", return_value.as_float);
+        } else {
+            return_value.as_int = popi();
+            //printf("DEBUG: Valor de retorno (int): %d\n", return_value.as_int);
+        }
     }
     
-    // Agora executa a função chamada
-    run_func_use(ast);
+    // Marca que encontramos um retorno, sinalizando para o interpretador que a função deve ser encerrada
+    return_encountered = 1;  
+    //printf("DEBUG: Retorno encontrado, fim da funcao.\n");
 }
 
 void run_main(AST *ast) {
@@ -726,9 +760,9 @@ void rec_run_ast(AST *ast) {
         case ARRAY_DECL_NODE:   run_array_decl(ast); break;
         case FUNC_LIST_NODE:    run_func_list(ast);    break;
         case FUNC_USE_NODE:     run_func_use(ast);     break;
-        case FUNC_CALL_NODE:    run_func_call(ast);    break;
+        case FUNC_DECL_NODE:    run_func_decl(ast);    break;
         case MAIN_NODE:    run_main(ast);   break;
-
+        case RETURN_NODE:       run_return(ast);    break;
 
 
         case I2F_NODE:      run_i2f(ast);       break;

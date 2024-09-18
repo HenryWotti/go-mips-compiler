@@ -181,19 +181,21 @@ func_generic:
       strcpy(copied_func_id, copied_id); 
       current_scope++; 
       current_func_idx = new_func();
-  } LEFT_PARENTESES argument_list RIGHT_PARENTESES type_spec { 
+  } LEFT_PARENTESES param_list RIGHT_PARENTESES type_spec { 
       update_func_return_type(ft, current_func_idx, last_decl_type); 
       current_return_type = last_decl_type;
   } block { 
       has_return = 0;
       // Cria um nó para a função com o tipo de retorno correto
-      AST* aux_func_tree = new_node(FUNC_USE_NODE, current_func_idx, get_type_from_func(yylineno, copied_func_id));
+      AST* aux_func_tree = new_node(FUNC_DECL_NODE, current_func_idx, get_type_from_func(yylineno, copied_func_id));
       
       // Adiciona a lista de argumentos como filho
       add_child(aux_func_tree, $5); // Lista de argumentos (produzida por argument_list)
       
       // Adiciona o bloco de código da função como filho
       add_child(aux_func_tree, $9); // Bloco de função
+
+      update_func_ast(ft, current_func_idx, aux_func_tree);
       
       // Define o resultado da produção como o nó da função completa
       $$ = aux_func_tree;
@@ -201,12 +203,12 @@ func_generic:
 ;
 
 
-argument_list:
+param_list:
   %empty {
     // Cria um nó vazio para representar a lista de argumentos (nenhum argumento)
     $$ = new_subtree(PARAM_LIST_NODE, VOID_TYPE_, 0);
   }
-| argument_list comma_expression ID type_spec { 
+| param_list comma_expression ID type_spec { 
     new_var();
     add_param_type(ft, current_func_idx, last_decl_type, yylineno);
     
@@ -993,6 +995,9 @@ int main() {
     print_str_table(st); printf("\n\n");
     print_var_table(vt); printf("\n\n"); // Print the entire variable table
     print_func_table(ft); // Print the functions table
+    printf("\n\n");
+    printf("---------------------------------------------------");
+    printf("\n\n");
 
     // Redireciona stdin para o console no Windows ou usa ctermid para Linux/macOS
     #ifdef _WIN32
