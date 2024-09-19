@@ -808,7 +808,7 @@ comparadors:
 | MORE_EQUAL { $$ = new_node(MORE_EQUAL_NODE, 0, VOID_TYPE_); }
 | DIFERS { $$ = new_node(DIFERS_NODE, 0, VOID_TYPE_); }
 | NOT { $$ = new_node(NOT_NODE, 0, VOID_TYPE_); }
-| EQUALS { $$ = new_node(EQUALS_NODE, 0, VOID_TYPE_); }
+| EQUALS { $$ = new_node(EQ_NODE, 0, VOID_TYPE_); }
 ;
 
 operators:

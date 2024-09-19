@@ -145,7 +145,6 @@ typedef enum
     LESS_EQUAL_NODE, // <=
     MORE_EQUAL_NODE, // >=
     DIFERS_NODE,     // !=
-    EQUALS_NODE,
     COMPARE_NODE,
 
     // Tipos de valor

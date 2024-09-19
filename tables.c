@@ -487,8 +487,6 @@ char *kind2str(NodeKind kind)
         return "||";
     case NOT_NODE:
         return "!";
-    case EQUALS_NODE:
-        return "==";
     case COMPARE_NODE:
         return "compare";
     case STATEMANT_LIST:
