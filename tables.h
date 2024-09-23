@@ -23,6 +23,10 @@ StrTable *create_str_table();
 // Returns the index of the string in the table.
 int add_string(StrTable *st, char *s);
 
+int get_string_table_size(StrTable *st);
+
+const char* get_string_from_table(StrTable *st, int index);
+
 // Returns a pointer to the string stored at index 'i'.
 char *get_string(StrTable *st, int i);
 

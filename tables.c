@@ -38,9 +38,21 @@ int add_string(StrTable *st, char *s)
     return idx_added;
 }
 
+int get_string_table_size(StrTable *st) {
+    return st->size;
+}
+
 char *get_string(StrTable *st, int i)
 {
     return st->t[i];
+}
+
+const char* get_string_from_table(StrTable *st, int index) {
+    if (index < 0 || index >= get_string_table_size(st)) {
+        fprintf(stderr, "Erro: Índice de string fora dos limites\n");
+        exit(EXIT_FAILURE);
+    }
+    return get_string(st, index);
 }
 
 void print_str_table(StrTable *st)

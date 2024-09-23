@@ -12,6 +12,7 @@
 #include "tables.h"
 #include "parser.h"
 #include "interpreter.h"
+#include "codegen.h"
 
 /*--------------------------- Pilha ----------------------------*/
 
@@ -988,7 +989,19 @@ int main() {
     printf("PARSE SUCCESSFUL!\n");
 
     if (ast_root != NULL) {
-        print_dot(ast_root);  // Imprime a AST no formato .dot
+      // Geração de código MIPS
+      FILE *out = fopen("output.asm", "w");
+      if (out != NULL) {
+        generate_mips_code(ast_root, out);
+        fclose(out);
+        printf("Codigo MIPS gerado com sucesso!\n");
+      } else {
+        printf("Erro ao abrir o arquivo de saída.\n");
+      }
+    }
+
+    if (ast_root != NULL) {
+      //print_dot(ast_root);  // Imprime a AST no formato .dot
     }
 
     printf("\n\n");
@@ -1001,9 +1014,9 @@ int main() {
 
     // Redireciona stdin para o console no Windows ou usa ctermid para Linux/macOS
     #ifdef _WIN32
-        freopen("CON", "r", stdin);  // Reabre o console no Windows
+      freopen("CON", "r", stdin);  // Reabre o console no Windows
     #else
-        stdin = fopen(ctermid(NULL), "r");  // Para Linux/macOS
+      stdin = fopen(ctermid(NULL), "r");  // Para Linux/macOS
     #endif
 
     // Executa o interpretador

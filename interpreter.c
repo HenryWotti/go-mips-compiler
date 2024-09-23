@@ -8,7 +8,6 @@
 NodeKind current_context_node_kind;
 extern FuncTable *ft;
 
-
 // ----------------------------------------------------------------------------
 
 extern StrTable *st;
